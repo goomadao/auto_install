@@ -101,7 +101,89 @@ wrong_para()
 }
 
 #--------------------------------------------------------------------------------------------------------------------------------------1. Install ShadowsocksR--------------------------------------------------------------------------------------------------------------------
+
+
+NAME=ShadowsocksR
+DAEMON=/usr/local/shadowsocks/server.py
+if [ -f /etc/shadowsocks-r/config.json ]; then
+    CONF=/etc/shadowsocks-r/config.json
+elif [ -f /etc/shadowsocks.json ]; then
+    CONF=/etc/shadowsocks.json
+fi
+RETVAL=0
+
+check_running(){
+    PID=$(ps -ef | grep -v grep | grep -i "${DAEMON}" | awk '{print $2}')
+    if [ -n "$PID" ]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+ssr_start(){
+    check_running
+    if [ $? -eq 0 ]; then
+        echo "$NAME (pid $PID) is already running..."
+        exit 0
+    else
+        $DAEMON -c $CONF -d start
+        RETVAL=$?
+        if [ $RETVAL -eq 0 ]; then
+            echo "Starting $NAME success"
+			exit 0
+        else
+            echo "Starting $NAME failed"
+			exit 1
+        fi
+    fi
+}
+
+ssr_stop(){
+    check_running
+    if [ $? -eq 0 ]; then
+        $DAEMON -c $CONF -d stop
+        RETVAL=$?
+        if [ $RETVAL -eq 0 ]; then
+            echo "Stopping $NAME success"
+			exit 0
+        else
+            echo "Stopping $NAME failed"
+			exit 1
+        fi
+    else
+        echo "$NAME is stopped"
+        RETVAL=1
+		exit 1
+    fi
+}
+
+ssr_status(){
+    check_running
+    if [ $? -eq 0 ]; then
+        echo "$NAME (pid $PID) is running..."
+		exit 0
+    else
+        echo "$NAME is stopped"
+        RETVAL=1
+		exit 1
+    fi
+}
+
+ssr_restart(){
+    do_stop
+    sleep 0.5
+    do_start
+	exit 0
+}
+
+
+
 install_ssr(){
+
+	[ -f /usr/local/shadowsocks/server.py ] && echo -e "[${red}Error${plain}] shadowsocksR已安装" && exit 1
+
+
     disable_selinux
     pre_install
     download_files
@@ -619,8 +701,9 @@ install_aria2()
 	make install
 	#firewall may need to be set
 
-	start_aria2
 	clean_aria2
+	start_aria2
+
 }
 
 clean_aria2()
@@ -657,7 +740,7 @@ Install_ct(){
 	echo -e "${Info} 开始保存 iptables防火墙规则..."
 	Save_iptables
 	echo -e "${Info} 所有步骤 安装完毕，开始启动..."
-	Start_ct
+	start_ct
 }
 
 check_sys2(){
@@ -806,7 +889,7 @@ Save_iptables(){
 	fi
 }
 
-Start_ct(){
+start_ct(){
 	check_installed_status
 	check_pid
 	[[ ! -z ${PID} ]] && echo -e "${Error} Cloud Torrent 正在运行，请检查 !" && exit 1
@@ -847,15 +930,40 @@ clean_filebrowser()
 }
 
 
+#----------------------------------------------------------------------------------------------------------------------------------------------------10. install rclone--------------------------------------------------------------------------------------------------------------------
+install_rclone()
+{
+	cd ${cur_dir}
+	wget --no-check-certificate https://downloads.rclone.org/v1.42/rclone-v1.42-linux-amd64.rpm
+	rpm -ivh rclone-v1.42-linux-amd64.rpm
+	rm -rf rclone-v1.42-linux-amd64.rpm
+}
 
 
 
 
+
+
+usage()
+{
+	echo "Parameter list: -ssr(start stop status restart) | -pip | -speedtest | -progress | -aria2(start) | -cloudt(start) | -filebrowser | -rclone | -bbr"
+}
+
+
+
+if [ "$#" -eq 0 ];then
+	usage
+	exit 0
+fi
 
 
 case $1 in 
 	-ssr )
-		install_ssr
+		if [ "$#" -eq 1 ]; then
+			install_ssr
+		elif [ "$#" -eq 2 ]; then
+			ssr_${2}
+		fi
 	;;
 	
 	-bbr )
@@ -876,15 +984,20 @@ case $1 in
 	;;
 	
 	-aria2 )
-		install_aria2
+		if [ "$#" -eq 1 ]; then
+			install_aria2
+		elid ["$#" -eq 2 ]; then
+			${2}_aria2
+		fi
 	;;
 	
-	-start_aria2 )
-		start_aria2
-	;;
 	
 	-cloudt )
-		Install_ct
+		if [ "$#" -eq 1 ]; then
+			Install_ct
+		elif [ "$#" -eq 2 ]; then
+			${2}_ct
+		fi
 	;;
 	
 	-start_cloudt )
@@ -893,6 +1006,10 @@ case $1 in
 	
 	-filebrowser )
 		install_filebrowser
+	;;
+	
+	-rclone )
+		install_rclone
 	;;
 	
 	-all )
@@ -904,6 +1021,7 @@ case $1 in
 		install_aria2
 		install_cloudt
 		install_filebrowser
+		install_rclone
 		
 		
 		
@@ -913,6 +1031,6 @@ case $1 in
 	
 	-* )
 		echo "Wrong parameter!"
-		echo "Parameter list: -ssr | -pip | -speedtest | -progress | -aria2 | -start_aria2 | -cloudt | -start_cloudt | -filebrowser | -bbr"
-	;;
+		usage
+		;;
 esac
