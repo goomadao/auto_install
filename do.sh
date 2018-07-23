@@ -986,7 +986,7 @@ case $1 in
 	-aria2 )
 		if [ "$#" -eq 1 ]; then
 			install_aria2
-		elid ["$#" -eq 2 ]; then
+		elif ["$#" -eq 2 ]; then
 			${2}_aria2
 		fi
 	;;
