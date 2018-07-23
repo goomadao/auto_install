@@ -109,7 +109,7 @@ ssr_restart(){
 
 install_ssr(){
 
-	[ -f /usr/local/shadowsocks/server.py ] && echo -e "[${red}Error${plain}] shadowsocksR已安装" && exit 1
+	[ -f /usr/local/shadowsocks/server.py ] && echo -e "[${red}Error${plain}] shadowsocksR已安装" && return
 
 
     disable_selinux
@@ -506,7 +506,7 @@ case $1 in
 		install_rclone
 	;;
 	
-	all )
+	-all )
 	
 		install_ssr
 		install_pip
@@ -516,6 +516,7 @@ case $1 in
 		install_chromium
 		install_notepadqq
 		install_rclone
+	;;
 	
 	* )
 		usage

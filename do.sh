@@ -181,7 +181,7 @@ ssr_restart(){
 
 install_ssr(){
 
-	[ -f /usr/local/shadowsocks/server.py ] && echo -e "[${red}Error${plain}] shadowsocksR已安装" && exit 1
+	[ -f /usr/local/shadowsocks/server.py ] && echo -e "[${red}Error${plain}] shadowsocksR已安装" && return
 
 
     disable_selinux
