@@ -458,6 +458,15 @@ install_rclone()
 	rm -rf rclone-v1.42-linux-amd64.rpm
 }
 
+#----------------------------------------------------------------------------------------------------------------------------------------------------9. upgrade kernel--------------------------------------------------------------------------------------------------------------------
+kernel_upgrade()
+{
+	rpm --import https://www.elrepo.org/RPM-GPG-KEY-elrepo.org
+	rpm -Uvh http://www.elrepo.org/elrepo-release-7.0-3.el7.elrepo.noarch.rpm
+	yum --enablerepo=elrepo-kernel install kernel-ml
+}
+
+
 
 usage()
 {
@@ -506,6 +515,10 @@ case $1 in
 		install_rclone
 	;;
 	
+	-kernel )
+		kernel_upgrade
+	;;
+	
 	-all )
 	
 		install_ssr
@@ -516,6 +529,7 @@ case $1 in
 		install_chromium
 		install_notepadqq
 		install_rclone
+		kernel_upgrade
 	;;
 	
 	* )
