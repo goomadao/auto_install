@@ -356,7 +356,7 @@ install()
 		elif check_sys packageManager apt; then
 			update-rc.d -f shadowsocks defaults
 		fi
-		
+		sed -i "s/DAEMON=/usr/local/shadowsocks/server.py/DAEMON=/usr/local/shadowsocks/local.py/g" /etc/init.d/shadowsocks
 		/etc/init.d/shadowsocks start
 		
 		
@@ -483,8 +483,12 @@ install_notepadqq()
 #----------------------------------------------------------------------------------------------------------------------------------------------------8. install rclone--------------------------------------------------------------------------------------------------------------------
 install_rclone()
 {
+	install_tsocks
 	cd ${cur_dir}
-	wget --no-check-certificate https://downloads.rclone.org/v1.42/rclone-v1.42-linux-amd64.rpm
+	if ! tsocks wget --no-check-certificate https://downloads.rclone.org/v1.42/rclone-v1.42-linux-amd64.rpm; then
+		echo -e "[${red}Error${plain}] 下载rpm失败，可能网络不通或者未设置socks5代理，请自行检查"
+		exit 1
+	fi
 	rpm -ivh rclone-v1.42-linux-amd64.rpm
 	rm -rf rclone-v1.42-linux-amd64.rpm
 }
@@ -492,9 +496,9 @@ install_rclone()
 #----------------------------------------------------------------------------------------------------------------------------------------------------9. upgrade kernel--------------------------------------------------------------------------------------------------------------------
 kernel_upgrade()
 {
-	#if check_sys packageManager dnf; then
-		#return
-	#fi
+	if check_sys packageManager dnf; then
+		return
+	fi
 	rpm --import https://www.elrepo.org/RPM-GPG-KEY-elrepo.org
 	rpm -Uvh http://www.elrepo.org/elrepo-release-7.0-3.el7.elrepo.noarch.rpm
 	yum --enablerepo=elrepo-kernel install kernel-ml
@@ -505,11 +509,30 @@ install_vscode()
 {
 	rpm --import https://packages.microsoft.com/keys/microsoft.asc
 	sh -c 'echo -e "[code]\nname=Visual Studio Code\nbaseurl=https://packages.microsoft.com/yumrepos/vscode\nenabled=1\ngpgcheck=1\ngpgkey=https://packages.microsoft.com/keys/microsoft.asc" > /etc/yum.repos.d/vscode.repo'
-	if packageManager dnf; then
+	if check_sys packageManager dnf; then
 		dnf install code -y
-	elif packageManager yum; then
+	elif check_sys packageManager yum; then
 		yum install code -y
 	fi
+}
+
+#----------------------------------------------------------------------------------------------------------------------------------------------------11. install tsocks--------------------------------------------------------------------------------------------------------------------
+install_tsocks()
+{
+	if check_sys packageManager yum; then
+		yum -y install tsocks
+	elif check_sys packageManager dnf; then
+		dnf -y install tsocks
+	fi
+
+	rm -rf /etc/tsocks.conf
+	cat > /etc/tsocks.conf << EOF
+{
+	server = 127.0.0.1
+	server_type = 5
+	server_port = 1080
+}
+EOF
 }
 
 
@@ -571,6 +594,10 @@ case $1 in
 	-vscode )
 		install_vscode
 	;;
+
+	-tsocks )
+		install_tsocks
+	;;
 	
 	-all )
 	
@@ -581,9 +608,10 @@ case $1 in
 		install_progress
 		install_chromium
 		install_notepadqq
-		install_rclone
+		install_tsocks
 		kernel_upgrade
 		install_vscode
+		install_rclone
 	;;
 	
 	* )
