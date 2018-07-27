@@ -116,7 +116,7 @@ install_ssr(){
     pre_install
     download_files
     config_shadowsocks
-    if check_sys packageManager yum; then
+    if check_sys packageManager yum || check_sys packageManager dnf; then
         firewall_set
     fi
     install
@@ -133,7 +133,7 @@ disable_selinux()
 
 pre_install()
 {
-	if check_sys packageManager yum || check_sys packageManager apt; then
+	if check_sys packageManager yum || check_sys packageManager apt || check_sys packageManager dnf; then
 		#Not supporting centos 5
 		if centosversion 5; then
 			echo -e "[${red}Error${plain}]不支持CentOs5,请将系统换为CentOs 6+/Ubuntu 12+/Debian 7+并重试"
@@ -153,6 +153,9 @@ pre_install()
 	if check_sys packageManager yum; then
 		yum -y update
 		yum -y install python python-devel python-setuptools openssl openssl-devel curl wget unzip gcc automake autoconf make libtool
+	elif check_sys packageManager dnf; then
+		dnf -y update
+		dnf -y install python python-devel python-setuptools openssl openssl-devel curl wget unzip gcc automake autoconf make libtool
 	elif check_sys packageManager apt; then
 		apt-get -y update
 		apt-get -y install python python-dev python-setuptools openssl libssl-dev curl wget unzip gcc automake autoconf make libtool
@@ -168,27 +171,37 @@ check_sys()
 	local release=""
 	local systemPackage=""
 	
-	if [[ -f /etc/redhat-release ]]; then
+
+	if grep -Eqi "centos" /etc/redhat-release; then
 		release="centos"
 		systemPackage="yum"
+	elif grep -Eqi "fedora" /etc/redhat-release; then
+		release="fedora"
+		systemPackage="dnf"
 	elif grep -Eqi "debian" /etc/issue; then
         release="debian"
         systemPackage="apt"
     elif grep -Eqi "ubuntu" /etc/issue; then
         release="ubuntu"
         systemPackage="apt"
-    elif grep -Eqi "centos|red hat|redhat" /etc/issue; then
+    elif grep -Eqi "centos" /etc/issue; then
         release="centos"
         systemPackage="yum"
+	elif grep -Eqi "fedora" /etc/issue; then
+		release="fedora"
+		systemPackage="dnf"
     elif grep -Eqi "debian" /proc/version; then
         release="debian"
         systemPackage="apt"
     elif grep -Eqi "ubuntu" /proc/version; then
         release="ubuntu"
         systemPackage="apt"
-    elif grep -Eqi "centos|red hat|redhat" /proc/version; then
+    elif grep -Eqi "centos" /proc/version; then
         release="centos"
         systemPackage="yum"
+	elif grep -Eqi "fedora" /proc/version; then
+        release="fedora"
+        systemPackage="dnf"
     fi
 	
 	if [[ "${checkType}" == "sysRelease" ]]; then
@@ -244,7 +257,7 @@ download_files()
         exit 1
     fi
     # Download ShadowsocksR init script
-    if check_sys packageManager yum; then
+    if check_sys packageManager yum || check_sys packageManager dnf; then
         if ! wget --no-check-certificate https://raw.githubusercontent.com/teddysun/shadowsocks_install/master/shadowsocksR -O /etc/init.d/shadowsocks; then
             echo -e "[${red}Error${plain}] Failed to download ShadowsocksR chkconfig file!"
             exit 1
@@ -285,7 +298,7 @@ firewall_set()
 {
 	echo -e "[${green}Info${plain}] firewall set start"
 	
-	if centosversion 6; then
+	if check_sys packageManager yum && centosversion 6; then
         /etc/init.d/iptables status > /dev/null 2>&1
         if [ $? -eq 0 ]; then
             iptables -L -n | grep -i ${shadowsocksport} > /dev/null 2>&1
@@ -300,7 +313,7 @@ firewall_set()
         else
             echo -e "[${yellow}Warning${plain}] iptables looks like shutdown or not installed, please manually set it if necessary."
         fi
-	elif centosversion 7; then
+	elif check_sys packageManager dnf || check_sys packageManager yum && centosversion 7; then
 		systemctl status firewalld > /dev/null 2>&1
 		if [ $? -eq 0 ]; then
 			firewall-cmd --zone=public --add-port=${shadowsocksport}/tcp --permanent
@@ -337,7 +350,7 @@ install()
 	mv ${shadowsocks_r_file}/shadowsocks /usr/local/
 	if [ -f /usr/local/shadowsocks/server.py ]; then
 		chmod +x /etc/init.d/shadowsocks
-		if check_sys packageManager yum; then
+		if check_sys packageManager yum || check_sys packageManager dnf; then
 			chkconfig --add shadowsocks
 			chkconfig shadowsocks on
 		elif check_sys packageManager apt; then
@@ -373,7 +386,7 @@ uninstall_shadowsocksr(){
         if [ $? -eq 0 ]; then
             /etc/init.d/shadowsocks stop
         fi
-        if check_sys packageManager yum; then
+        if check_sys packageManager yum || check_sys packageManager dnf; then
             chkconfig --del shadowsocks
         elif check_sys packageManager apt; then
             update-rc.d -f shadowsocks remove
@@ -395,7 +408,11 @@ uninstall_shadowsocksr(){
 #----------------------------------------------------------------------------------------------------------------------------------------------------2. Install pip--------------------------------------------------------------------------------------------------------------------
 install_pip()
 {
-	yum -y install python-pip
+	if check_sys packageManager yum; then
+		yum -y install python-pip
+	elif check_sys packageManager dnf; then
+		dnf -y install python-pip
+	fi
 }
 
 #----------------------------------------------------------------------------------------------------------------------------------------------------3. upgrade pip--------------------------------------------------------------------------------------------------------------------
@@ -422,7 +439,11 @@ install_progress()
 	tar zxf v0.14.tar.gz
 	mv progress-0.14 progress
 	cd progress
-	yum -y install ncurses-devel gcc make
+	if check_sys packageManager yum; then
+		yum -y install ncurses-devel gcc make
+	elif check_sys packageManager dnf; then
+		dnf -y install ncurses-devel gcc make
+	fi
 	make && make install
 	clean_progress
 }
@@ -438,15 +459,25 @@ install_chromium()
 {
 	cd /etc/yum.repos.d
 	wget http://people.centos.org/hughesjr/chromium/6/chromium-el6.repo
-	yum -y install chromium
+	if check_sys packageManager yum; then
+		yum -y install chromium
+	elif check_sys packageManager dnf; then
+		dnf -y install chromium
+	fi
+
 }
 
 #----------------------------------------------------------------------------------------------------------------------------------------------------7. install notepadqq--------------------------------------------------------------------------------------------------------------------
 install_notepadqq()
 {
 	wget -O /etc/yum.repos.d/sea-devel.repo http://sea.fedorapeople.org/sea-devel.repo
-	yum install -y qt5-qtbase-devel qt5-qttools-devel qt5-qtwebkit-devel qt5-qtsvg-devel
-	yum install -y notepadqq
+	if check_sys packageManager yum; then
+		yum install -y qt5-qtbase-devel qt5-qttools-devel qt5-qtwebkit-devel qt5-qtsvg-devel
+		yum install -y notepadqq
+	elif check_sys packageManager dnf; then
+		dnf install -y qt5-qtbase-devel qt5-qttools-devel qt5-qtwebkit-devel qt5-qtsvg-devel
+		dnf install -y notepadqq
+	fi
 }
 
 #----------------------------------------------------------------------------------------------------------------------------------------------------8. install rclone--------------------------------------------------------------------------------------------------------------------
@@ -461,6 +492,9 @@ install_rclone()
 #----------------------------------------------------------------------------------------------------------------------------------------------------9. upgrade kernel--------------------------------------------------------------------------------------------------------------------
 kernel_upgrade()
 {
+	#if check_sys packageManager dnf; then
+		#return
+	#fi
 	rpm --import https://www.elrepo.org/RPM-GPG-KEY-elrepo.org
 	rpm -Uvh http://www.elrepo.org/elrepo-release-7.0-3.el7.elrepo.noarch.rpm
 	yum --enablerepo=elrepo-kernel install kernel-ml
@@ -470,8 +504,12 @@ kernel_upgrade()
 install_vscode()
 {
 	rpm --import https://packages.microsoft.com/keys/microsoft.asc
-	sh -c 'echo -e "[code]\nname=Visual Studio Code\nbaseurl=https://packages.microsoft.com/yumrepos/vscode/nenabled=1\ntype=rpm-md\ngpgcheck=https://packages.microsoft.com/keys/microsoft.asc" > /etc/yum.repos.d/vscode.repo'
-	yum install code -y
+	sh -c 'echo -e "[code]\nname=Visual Studio Code\nbaseurl=https://packages.microsoft.com/yumrepos/vscode\nenabled=1\ngpgcheck=1\ngpgkey=https://packages.microsoft.com/keys/microsoft.asc" > /etc/yum.repos.d/vscode.repo'
+	if packageManager dnf; then
+		dnf install code -y
+	elif packageManager yum; then
+		yum install code -y
+	fi
 }
 
 
