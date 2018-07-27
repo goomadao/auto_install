@@ -466,6 +466,17 @@ kernel_upgrade()
 	yum --enablerepo=elrepo-kernel install kernel-ml
 }
 
+#----------------------------------------------------------------------------------------------------------------------------------------------------10. install vscode--------------------------------------------------------------------------------------------------------------------
+install_vscode()
+{
+	rpm --import https://packages.microsoft.com/keys/microsoft.asc
+	sh -c 'echo -e "[code]\nname=Visual Studio Code\nbaseurl=https://packages.microsoft.com/yumrepos/vscode/nenabled=1\ntype=rpm-md\ngpgcheck=https://packages.microsoft.com/keys/microsoft.asc" > /etc/yum.repos.d/vscode.repo'
+	yum install code -y
+}
+
+
+
+
 
 
 usage()
@@ -518,6 +529,10 @@ case $1 in
 	-kernel )
 		kernel_upgrade
 	;;
+
+	-vscode )
+		install_vscode
+	;;
 	
 	-all )
 	
@@ -530,6 +545,7 @@ case $1 in
 		install_notepadqq
 		install_rclone
 		kernel_upgrade
+		install_vscode
 	;;
 	
 	* )
