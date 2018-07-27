@@ -356,7 +356,7 @@ install()
 		elif check_sys packageManager apt; then
 			update-rc.d -f shadowsocks defaults
 		fi
-		sed -i "s/DAEMON=/usr/local/shadowsocks/server.py/DAEMON=/usr/local/shadowsocks/local.py/g" /etc/init.d/shadowsocks
+		sed -i "s/DAEMON=\/usr\/local\/shadowsocks\/server.py/DAEMON=\/usr\/local\/shadowsocks\/local.py/g" /etc/init.d/shadowsocks
 		/etc/init.d/shadowsocks start
 		
 		
