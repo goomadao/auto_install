@@ -713,8 +713,10 @@ install_aria2()
 	cd ${cur_dir}
 	if check_sys packageManager yum; then
 		yum -y groupinstall "Development tools"
+		yum -y install gcc-c++
 	elif check_sys packageManager dnf; then
 		dnf -y groupinstall "Development tools"
+		dnf -y install gcc-c++
 	fi
 	wget --no-check-certificate https://github.com/aria2/aria2/releases/download/release-1.34.0/aria2-1.34.0.tar.gz
 	tar zxf aria2-1.34.0.tar.gz
@@ -956,15 +958,22 @@ install_filebrowser()
 	wget https://github.com/filebrowser/filebrowser/releases/download/v1.8.0/linux-amd64-filebrowser.tar.gz
 	tar -zxvf linux-amd64-filebrowser.tar.gz
 	./filebrowser --port 23333 --scope /root &
-	if check_sys packageManager dnf || check_sys packageManager yum && centosversion 6; then
+	if check_sys packageManager dnf; then
 		iptables -I INPUT -m state --state NEW -m tcp -p tcp --dport 23333 -j ACCEPT
 		iptables -I INPUT -m state --state NEW -m udp -p udp --dport 23333 -j ACCEPT
 		service iptables save
 		service iptables restart
-	elif check_sys packageManager yum && centosversion 7; then
-		firewall-cmd --zone=public --add-port=23333/tcp --permanent
-		firewall-cmd --zone=public --add-port=23333/udp --permanent
-		firewall-cmd --reload
+	elif check_sys packageManager yum; then
+		if centosversion 6; then
+			iptables -I INPUT -m state --state NEW -m tcp -p tcp --dport 23333 -j ACCEPT
+			iptables -I INPUT -m state --state NEW -m udp -p udp --dport 23333 -j ACCEPT
+			service iptables save
+			service iptables restart
+		elif centosversion 7; then
+			firewall-cmd --zone=public --add-port=23333/tcp --permanent
+			firewall-cmd --zone=public --add-port=23333/udp --permanent
+			firewall-cmd --reload
+		fi
 	fi
 	
 	clean_filebrowser
