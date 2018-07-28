@@ -125,13 +125,13 @@ ssr_start(){
     check_running
     if [ $? -eq 0 ]; then
         echo "$NAME (pid $PID) is already running..."
-        exit 0
+        return
     else
         $DAEMON -c $CONF -d start
         RETVAL=$?
         if [ $RETVAL -eq 0 ]; then
             echo "Starting $NAME success"
-			exit 0
+			return
         else
             echo "Starting $NAME failed"
 			exit 1
@@ -146,7 +146,7 @@ ssr_stop(){
         RETVAL=$?
         if [ $RETVAL -eq 0 ]; then
             echo "Stopping $NAME success"
-			exit 0
+			return
         else
             echo "Stopping $NAME failed"
 			exit 1
@@ -154,7 +154,7 @@ ssr_stop(){
     else
         echo "$NAME is stopped"
         RETVAL=1
-		exit 1
+		return
     fi
 }
 
@@ -162,11 +162,11 @@ ssr_status(){
     check_running
     if [ $? -eq 0 ]; then
         echo "$NAME (pid $PID) is running..."
-		exit 0
+		return
     else
         echo "$NAME is stopped"
         RETVAL=1
-		exit 1
+		return
     fi
 }
 
@@ -174,7 +174,7 @@ ssr_restart(){
     do_stop
     sleep 0.5
     do_start
-	exit 0
+	return
 }
 
 
@@ -522,7 +522,7 @@ install_progress()
 	if ! wget --no-check-certificate https://github.com/Xfennec/progress/archive/v0.14.tar.gz; then
 		echo -e "[${red}Error${plain}] Failed to download progress-v0.14.tar.gz!"
 		clean_progress
-		exit 1
+		return
 	fi
 	tar zxf v0.14.tar.gz
 	mv progress-0.14 progress
@@ -550,7 +550,7 @@ install_bbr()
 	check_bbr_status
 	if [ $? -eq 0 ]; then
 		echo -e "[${green}提示${plain}] TCP BBR加速已经开启成功。"
-		exit 0
+		return
 	fi
 	
 	check_kernel_version
@@ -558,7 +558,7 @@ install_bbr()
 		echo -e "[${green}提示${plain}] 你的系统版本高于4.9，直接开启BBR加速。"
 		sysctl_config
 		echo -e "[${green}提示${plain}] TCP BBR加速开启成功"
-		exit 0
+		return
 	fi
 	
 	if [[ "${os}" == "centos" ]]; then
@@ -737,7 +737,7 @@ start_aria2()
 
 #----------------------------------------------------------------------------------------------------------------------------------------------------8. install cloudt--------------------------------------------------------------------------------------------------------------------
 Install_ct(){
-	[[ -e ${ct_file} ]] && echo -e "${Error} 检测到 Cloud Torrent 已安装 !" && exit 1
+	[[ -e ${ct_file} ]] && echo -e "${Error} 检测到 Cloud Torrent 已安装 !" && return
 	check_sys2
 	echo -e "${Info} 开始设置 用户配置..."
 	Set_conf
@@ -919,7 +919,7 @@ Save_iptables(){
 start_ct(){
 	check_installed_status
 	check_pid
-	[[ ! -z ${PID} ]] && echo -e "${Error} Cloud Torrent 正在运行，请检查 !" && exit 1
+	[[ ! -z ${PID} ]] && echo -e "${Error} Cloud Torrent 正在运行，请检查 !" && return
 	/etc/init.d/cloudt start
 }
 
@@ -936,7 +936,7 @@ check_pid(){
 install_filebrowser()
 {
 	cd ${cur_dir}
-	[ -d filebrowser ] && echo -e "[${green}Hint${plain}] filebrowser目录已存在" && cd filebrowser && ./filebrowser --port 23333 --scope /root && firewall-cmd --zone=public --add-port=23333/tcp --permanent && firewall-cmd --zone=public --add-port=23333/udp --permanent && firewall-cmd --reload && exit 1                    
+	[ -d filebrowser ] && echo -e "[${green}Hint${plain}] filebrowser目录已存在" && cd filebrowser && ./filebrowser --port 23333 --scope /root && firewall-cmd --zone=public --add-port=23333/tcp --permanent && firewall-cmd --zone=public --add-port=23333/udp --permanent && firewall-cmd --reload && return                 
 	[ ! -d filebrowser ] && mkdir filebrowser
 	cd filebrowser
 	wget https://github.com/filebrowser/filebrowser/releases/download/v1.8.0/linux-amd64-filebrowser.tar.gz
