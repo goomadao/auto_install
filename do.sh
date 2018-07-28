@@ -374,6 +374,8 @@ firewall_set()
 		if [ $? -ne 0 ]; then
 			iptables -I INPUT -m state --state NEW -m tcp -p tcp --dport ${shadowsocksport} -j ACCEPT
 			iptables -I INPUT -m state --state NEW -m udp -p udp --dport ${shadowsocksport} -j ACCEPT
+			iptables -I OUTPUT -m state --state NEW -m tcp -p tcp --dport 1024 -j ACCEPT
+			iptables -I OUTPUT -m state --state NEW -m udp -p udp --dport 1024 -j ACCEPT
 			service iptables save
 			service iptables restart
 		else
