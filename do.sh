@@ -218,7 +218,7 @@ pre_install()
 	
 	shadowsockspwd=${password}
 	shadowsocksport=$port
-	shadowsockscipher="aes-256-cfv"
+	shadowsockscipher="aes-256-cfb"
 	shadowsocksprotocol="origin"
 	shadowsocksobfs="plain"
 	
@@ -941,7 +941,7 @@ install_filebrowser()
 	cd filebrowser
 	wget https://github.com/filebrowser/filebrowser/releases/download/v1.8.0/linux-amd64-filebrowser.tar.gz
 	tar -zxvf linux-amd64-filebrowser.tar.gz
-	./filebrowser --port 23333 --scope /root
+	./filebrowser --port 23333 --scope /root &
 	firewall-cmd --zone=public --add-port=23333/tcp --permanent
 	firewall-cmd --zone=public --add-port=23333/udp --permanent
 	firewall-cmd --reload

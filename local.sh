@@ -147,7 +147,7 @@ pre_install()
 	
 	shadowsockspwd=${password}
 	shadowsocksport=$port
-	shadowsockscipher="aes-256-cfv"
+	shadowsockscipher="aes-256-cfb"
 	shadowsocksprotocol="origin"
 	shadowsocksobfs="plain"
 	
