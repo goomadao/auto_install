@@ -1046,7 +1046,7 @@ case $1 in
 		install_speedtest
 		install_progress
 		install_aria2
-		install_cloudt
+		Install_ct
 		install_filebrowser
 		install_rclone
 		
