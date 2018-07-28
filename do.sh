@@ -188,7 +188,7 @@ install_ssr(){
     pre_install
     download_files
     config_shadowsocks
-    if check_sys packageManager yum; then
+    if check_sys packageManager yum || check_sys packageManager dnf; then
         firewall_set
     fi
     install
@@ -205,26 +205,29 @@ disable_selinux()
 
 pre_install()
 {
-	if check_sys packageManager yum || check_sys packageManager apt; then
+	if check_sys packageManager yum || check_sys packageManager apt || check_sys packageManager dnf; then
 		#Not supporting centos 5
 		if centosversion 5; then
-			echo -e "[${red}Error${plain}]不支持CentOs5,请将系统换为CentOs 6+/Ubuntu 12+/Debian 7+并重试"
+			echo -e "[${red}Error${plain}]不支持CentOs5,请将系统换为CentOs 6+/Ubuntu 12+/Debian 7+/Fedora 27+并重试"
 			exit 1
 		fi
 	else
-		echo -e "[${red}Error${plain}]不支持你的系统,请将系统换为CentOs 6+/Ubuntu 12+/Debian 7+并重试"
+		echo -e "[${red}Error${plain}]不支持你的系统,请将系统换为CentOs 6+/Ubuntu 12+/Debian 7+/Fedora 27+并重试"
 		exit 1
 	fi
 	
 	shadowsockspwd=${password}
 	shadowsocksport=$port
-	shadowsockscipher=${ciphers[1]}
-	shadowsocksprotocol=${protocols[0]}
-	shadowsocksobfs=${obfs[0]}
+	shadowsockscipher="aes-256-cfv"
+	shadowsocksprotocol="origin"
+	shadowsocksobfs="plain"
 	
 	if check_sys packageManager yum; then
 		yum -y update
 		yum -y install python python-devel python-setuptools openssl openssl-devel curl wget unzip gcc automake autoconf make libtool
+	elif check_sys packageManager dnf; then
+		dnf -y update
+		dnf -y install python python-devel python-setuptools openssl openssl-devel curl wget unzip gcc automake autoconf make libtool
 	elif check_sys packageManager apt; then
 		apt-get -y update
 		apt-get -y install python python-dev python-setuptools openssl libssl-dev curl wget unzip gcc automake autoconf make libtool
@@ -240,27 +243,37 @@ check_sys()
 	local release=""
 	local systemPackage=""
 	
-	if [[ -f /etc/redhat-release ]]; then
+
+	if grep -Eqi "centos" /etc/redhat-release; then
 		release="centos"
 		systemPackage="yum"
+	elif grep -Eqi "fedora" /etc/redhat-release; then
+		release="fedora"
+		systemPackage="dnf"
 	elif grep -Eqi "debian" /etc/issue; then
         release="debian"
         systemPackage="apt"
     elif grep -Eqi "ubuntu" /etc/issue; then
         release="ubuntu"
         systemPackage="apt"
-    elif grep -Eqi "centos|red hat|redhat" /etc/issue; then
+    elif grep -Eqi "centos" /etc/issue; then
         release="centos"
         systemPackage="yum"
+	elif grep -Eqi "fedora" /etc/issue; then
+		release="fedora"
+		systemPackage="dnf"
     elif grep -Eqi "debian" /proc/version; then
         release="debian"
         systemPackage="apt"
     elif grep -Eqi "ubuntu" /proc/version; then
         release="ubuntu"
         systemPackage="apt"
-    elif grep -Eqi "centos|red hat|redhat" /proc/version; then
+    elif grep -Eqi "centos" /proc/version; then
         release="centos"
         systemPackage="yum"
+	elif grep -Eqi "fedora" /proc/version; then
+        release="fedora"
+        systemPackage="dnf"
     fi
 	
 	if [[ "${checkType}" == "sysRelease" ]]; then
@@ -316,7 +329,7 @@ download_files()
         exit 1
     fi
     # Download ShadowsocksR init script
-    if check_sys packageManager yum; then
+    if check_sys packageManager yum || check_sys packageManager dnf; then
         if ! wget --no-check-certificate https://raw.githubusercontent.com/teddysun/shadowsocks_install/master/shadowsocksR -O /etc/init.d/shadowsocks; then
             echo -e "[${red}Error${plain}] Failed to download ShadowsocksR chkconfig file!"
             exit 1
@@ -357,7 +370,7 @@ firewall_set()
 {
 	echo -e "[${green}Info${plain}] firewall set start"
 	
-	if centosversion 6; then
+	if check_sys packageManager yum && centosversion 6; then
         /etc/init.d/iptables status > /dev/null 2>&1
         if [ $? -eq 0 ]; then
             iptables -L -n | grep -i ${shadowsocksport} > /dev/null 2>&1
@@ -372,7 +385,7 @@ firewall_set()
         else
             echo -e "[${yellow}Warning${plain}] iptables looks like shutdown or not installed, please manually set it if necessary."
         fi
-	elif centosversion 7; then
+	elif check_sys packageManager dnf || check_sys packageManager yum && centosversion 7; then
 		systemctl status firewalld > /dev/null 2>&1
 		if [ $? -eq 0 ]; then
 			firewall-cmd --zone=public --add-port=${shadowsocksport}/tcp --permanent
@@ -409,29 +422,15 @@ install()
 	mv ${shadowsocks_r_file}/shadowsocks /usr/local/
 	if [ -f /usr/local/shadowsocks/server.py ]; then
 		chmod +x /etc/init.d/shadowsocks
-		if check_sys packageManager yum; then
+		if check_sys packageManager yum || check_sys packageManager dnf; then
 			chkconfig --add shadowsocks
 			chkconfig shadowsocks on
 		elif check_sys packageManager apt; then
 			update-rc.d -f shadowsocks defaults
 		fi
-		
 		/etc/init.d/shadowsocks start
 		
-		clear
 		
-		echo
-		echo -e "Congratulations, shadowsocksR server installed completed!"
-		echo -e "Your server IPv4 address    : \033[41;37m $(get_ipv4) \033[0m"
-		echo -e "Your server IPv6 address    : \033[41;37m $(get_ipv6) \033[0m"
-		echo -e "Your server port            : \033[41;37m ${shadowsocksport} \033[0m"
-		echo -e "Your Password             : \033[41;37m ${shadowsockspwd} \033[0m"
-        echo -e "Your Protocol              : \033[41;37m ${shadowsocksprotocol} \033[0m"
-        echo -e "Your obfs                  : \033[41;37m ${shadowsocksobfs} \033[0m"
-        echo -e "Your Encryption Method     : \033[41;37m ${shadowsockscipher} \033[0m"
-        echo
-        echo "Enjoy it!"
-        echo
 	else
 		echo "shadowsocksR install failed, please try another method"
 		install_cleanup
@@ -444,6 +443,7 @@ install_cleanup()
 	cd ${cur_dir}
 	rm -rf ${shadowsocks_r_file}.tar.gz ${shadowsocks_r_file} ${libsodium_file}.tar.gz ${libsodium_file}
 }
+
 
 get_ipv4()
 {
@@ -474,7 +474,7 @@ uninstall_shadowsocksr(){
         if [ $? -eq 0 ]; then
             /etc/init.d/shadowsocks stop
         fi
-        if check_sys packageManager yum; then
+        if check_sys packageManager yum || check_sys packageManager dnf; then
             chkconfig --del shadowsocks
         elif check_sys packageManager apt; then
             update-rc.d -f shadowsocks remove
@@ -496,7 +496,11 @@ uninstall_shadowsocksr(){
 #----------------------------------------------------------------------------------------------------------------------------------------------------2. Install pip--------------------------------------------------------------------------------------------------------------------
 install_pip()
 {
-	yum -y install python-pip
+	if check_sys packageManager yum; then
+		yum -y install python-pip
+	elif check_sys packageManager dnf; then
+		dnf -y install python-pip
+	fi
 }
 
 #----------------------------------------------------------------------------------------------------------------------------------------------------3. upgrade pip--------------------------------------------------------------------------------------------------------------------
@@ -523,7 +527,11 @@ install_progress()
 	tar zxf v0.14.tar.gz
 	mv progress-0.14 progress
 	cd progress
-	yum -y install ncurses-devel gcc make
+	if check_sys packageManager yum; then
+		yum -y install ncurses-devel gcc make
+	elif check_sys packageManager dnf; then
+		dnf -y install ncurses-devel gcc make
+	fi
 	make && make install
 	clean_progress
 }
@@ -571,7 +579,7 @@ install_bbr()
 		fi
 		dpkg -i ${kernel_ubuntu_file}
 	else
-		echo -e "[${red}错误${plain}] 脚本不支持该操作系统，请修改系统为CentOS/Debian/Ubuntu。"
+		echo -e "[${red}错误${plain}] 脚本不支持该操作系统，请修改系统为CentOS/Debian/Ubuntu/Fedora。"
 		exit 1
 	fi
 	
@@ -582,20 +590,26 @@ install_bbr()
 }
 
 check_os() {
-    if [[ -f /etc/redhat-release ]]; then
+    if grep -Eqi "centos" /etc/redhat-release; then
         os="centos"
+	elif grep -Eqi "fedora" /etc/redhat-release; then
+		os="fedora"
     elif cat /etc/issue | grep -Eqi "debian"; then
         os="debian"
     elif cat /etc/issue | grep -Eqi "ubuntu"; then
         os="ubuntu"
-    elif cat /etc/issue | grep -Eqi "centos|red hat|redhat"; then
+    elif cat /etc/issue | grep -Eqi "centos"; then
         os="centos"
+	elif cat /etc/issue | grep -Eqi "fedora"; then
+        os="fedora"
     elif cat /proc/version | grep -Eqi "debian"; then
         os="debian"
     elif cat /proc/version | grep -Eqi "ubuntu"; then
         os="ubuntu"
-    elif cat /proc/version | grep -Eqi "centos|red hat|redhat"; then
+    elif cat /proc/version | grep -Eqi "centos"; then
         os="centos"
+	elif cat /proc/version | grep -Eqi "fedora"; then
+        os="fedora"
     fi
 }
 
@@ -687,7 +701,11 @@ reboot_os()
 install_aria2()
 {
 	cd ${cur_dir}
-	yum -y groupinstall "Development tools"
+	if check_sys packageManager yum; then
+		yum -y groupinstall "Development tools"
+	elif check_sys packageManager dnf; then
+		dnf -y groupinstall "Development tools"
+	fi
 	wget --no-check-certificate https://github.com/aria2/aria2/releases/download/release-1.34.0/aria2-1.34.0.tar.gz
 	tar zxf aria2-1.34.0.tar.gz
 	mv aria2-1.34.0 aria2
@@ -744,20 +762,26 @@ Install_ct(){
 }
 
 check_sys2(){
-	if [[ -f /etc/redhat-release ]]; then
+	if grep "centos" /etc/redhat-release; then
 		release="centos"
+	elif grep "fedora" /etc/redhat-release; then
+		release="fedora"
 	elif cat /etc/issue | grep -q -E -i "debian"; then
 		release="debian"
 	elif cat /etc/issue | grep -q -E -i "ubuntu"; then
 		release="ubuntu"
-	elif cat /etc/issue | grep -q -E -i "centos|red hat|redhat"; then
+	elif cat /etc/issue | grep -q -E -i "centos"; then
 		release="centos"
+	elif cat /etc/issue | grep -q -E -i "fedora"; then
+		release="fedora"
 	elif cat /proc/version | grep -q -E -i "debian"; then
 		release="debian"
 	elif cat /proc/version | grep -q -E -i "ubuntu"; then
 		release="ubuntu"
-	elif cat /proc/version | grep -q -E -i "centos|red hat|redhat"; then
+	elif cat /proc/version | grep -q -E -i "centos"; then
 		release="centos"
+	elif cat /proc/version | grep -q -E -i "fedora"; then
+		release="fedora"
     fi
 	bit=$(uname -m)
 }
@@ -798,8 +822,11 @@ Installation_dependency(){
 	gzip_ver=$(gzip -V)
 	if [[ -z ${gzip_ver} ]]; then
 		if [[ ${release} == "centos" ]]; then
-			yum update
+			yum update -y
 			yum install -y gzip
+		elif [[ ${release} == "fedora" ]]; then
+			dnf update -y
+			dnf install -y gzip
 		else
 			apt-get update
 			apt-get install -y gzip
@@ -835,7 +862,7 @@ Download_ct(){
 }
 
 Service_ct(){
-	if [[ ${release} = "centos" ]]; then
+	if [[ ${release} = "centos" || ${release} = "fedora" ]]; then
 		if ! wget --no-check-certificate "https://raw.githubusercontent.com/ToyoDAdoubi/doubi/master/other/cloudt_centos" -O /etc/init.d/cloudt; then
 			echo -e "${Error} Cloud Torrent服务 管理脚本下载失败 !" && exit 1
 		fi
@@ -862,7 +889,7 @@ EOF
 }
 
 Set_iptables(){
-	if [[ ${release} == "centos" ]]; then
+	if [[ ${release} == "centos" || ${release} == "fedora" ]]; then
 		service iptables save
 		chkconfig --level 2345 iptables on
 	else
@@ -882,7 +909,7 @@ Add_iptables(){
 }
 
 Save_iptables(){
-	if [[ ${release} == "centos" ]]; then
+	if [[ ${release} == "centos" || ${release} == "fedora" ]]; then
 		service iptables save
 	else
 		iptables-save > /etc/iptables.up.rules

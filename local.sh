@@ -116,9 +116,10 @@ install_ssr(){
     pre_install
     download_files
     config_shadowsocks
-    if check_sys packageManager yum || check_sys packageManager dnf; then
-        firewall_set
-    fi
+	####################客户端不需要开放端口
+    #if check_sys packageManager yum || check_sys packageManager dnf; then
+    #    firewall_set
+    #fi
     install
     install_cleanup
 }
@@ -136,11 +137,11 @@ pre_install()
 	if check_sys packageManager yum || check_sys packageManager apt || check_sys packageManager dnf; then
 		#Not supporting centos 5
 		if centosversion 5; then
-			echo -e "[${red}Error${plain}]不支持CentOs5,请将系统换为CentOs 6+/Ubuntu 12+/Debian 7+并重试"
+			echo -e "[${red}Error${plain}]不支持CentOs5,请将系统换为CentOs 6+/Ubuntu 12+/Debian 7+/Fedora 27+并重试"
 			exit 1
 		fi
 	else
-		echo -e "[${red}Error${plain}]不支持你的系统,请将系统换为CentOs 6+/Ubuntu 12+/Debian 7+并重试"
+		echo -e "[${red}Error${plain}]不支持你的系统,请将系统换为CentOs 6+/Ubuntu 12+/Debian 7+/Fedora 27+并重试"
 		exit 1
 	fi
 	
