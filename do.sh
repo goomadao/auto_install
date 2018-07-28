@@ -369,33 +369,43 @@ EOF
 firewall_set()
 {
 	echo -e "[${green}Info${plain}] firewall set start"
-	
-	if check_sys packageManager dnf || check_sys packageManager yum && centosversion 6; then
-        /etc/init.d/iptables status > /dev/null 2>&1
-        if [ $? -eq 0 ]; then
-            iptables -L -n | grep -i ${shadowsocksport} > /dev/null 2>&1
-            if [ $? -ne 0 ]; then
-                iptables -I INPUT -m state --state NEW -m tcp -p tcp --dport ${shadowsocksport} -j ACCEPT
-                iptables -I INPUT -m state --state NEW -m udp -p udp --dport ${shadowsocksport} -j ACCEPT
-                /etc/init.d/iptables save
-                /etc/init.d/iptables restart
-            else
-                echo -e "[${green}Info${plain}] port ${shadowsocksport} has been set up."
-            fi
-        else
-            echo -e "[${yellow}Warning${plain}] iptables looks like shutdown or not installed, please manually set it if necessary."
-        fi
-	elif check_sys packageManager yum && centosversion 7; then
-		systemctl status firewalld > /dev/null 2>&1
-		if [ $? -eq 0 ]; then
-			firewall-cmd --zone=public --add-port=${shadowsocksport}/tcp --permanent
-			firewall-cmd --zone=public --add-port=${shadowsocksport}/udp --permanent
-			firewall-cmd --reload
+	if check_sys packageManager dnf;then
+		iptables -L -n | grep -i ${shadowsocksport} > /dev/null 2>&1
+		if [ $? -ne 0 ]; then
+			iptables -I INPUT -m state --state NEW -m tcp -p tcp --dport ${shadowsocksport} -j ACCEPT
+			iptables -I INPUT -m state --state NEW -m udp -p udp --dport ${shadowsocksport} -j ACCEPT
+			/etc/init.d/iptables save
+			/etc/init.d/iptables restart
 		else
-			echo -e "[${yellow}Warning${plain}] iptables looks like shutdown or not installed, please manually set it if necessary."
+			echo -e "[${green}Info${plain}] port ${shadowsocksport} has been set up."
+		fi
+	elif check_sys packageManager yum; then
+		if centosversion 6; then
+			/etc/init.d/iptables status > /dev/null 2>&1
+			if [ $? -eq 0 ]; then
+				iptables -L -n | grep -i ${shadowsocksport} > /dev/null 2>&1
+				if [ $? -ne 0 ]; then
+					iptables -I INPUT -m state --state NEW -m tcp -p tcp --dport ${shadowsocksport} -j ACCEPT
+					iptables -I INPUT -m state --state NEW -m udp -p udp --dport ${shadowsocksport} -j ACCEPT
+					/etc/init.d/iptables save
+					/etc/init.d/iptables restart
+				else
+					echo -e "[${green}Info${plain}] port ${shadowsocksport} has been set up."
+				fi
+			else
+				echo -e "[${yellow}Warning${plain}] iptables looks like shutdown or not installed, please manually set it if necessary."
+			fi
+		elif centosversion 7; then
+			systemctl status firewalld > /dev/null 2>&1
+			if [ $? -eq 0 ]; then
+				firewall-cmd --zone=public --add-port=${shadowsocksport}/tcp --permanent
+				firewall-cmd --zone=public --add-port=${shadowsocksport}/udp --permanent
+				firewall-cmd --reload
+			else
+				echo -e "[${yellow}Warning${plain}] iptables looks like shutdown or not installed, please manually set it if necessary."
+			fi
 		fi
 	fi
-	
 	echo -e "[${green}Info${plain}] firewall set conplete"
 }
 
