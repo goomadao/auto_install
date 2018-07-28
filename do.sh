@@ -374,8 +374,8 @@ firewall_set()
 		if [ $? -ne 0 ]; then
 			iptables -I INPUT -m state --state NEW -m tcp -p tcp --dport ${shadowsocksport} -j ACCEPT
 			iptables -I INPUT -m state --state NEW -m udp -p udp --dport ${shadowsocksport} -j ACCEPT
-			/etc/init.d/iptables save
-			/etc/init.d/iptables restart
+			service iptables save
+			service iptables restart
 		else
 			echo -e "[${green}Info${plain}] port ${shadowsocksport} has been set up."
 		fi
