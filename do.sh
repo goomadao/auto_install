@@ -370,7 +370,7 @@ firewall_set()
 {
 	echo -e "[${green}Info${plain}] firewall set start"
 	
-	if check_sys packageManager yum && centosversion 6; then
+	if check_sys packageManager dnf || check_sys packageManager yum && centosversion 6; then
         /etc/init.d/iptables status > /dev/null 2>&1
         if [ $? -eq 0 ]; then
             iptables -L -n | grep -i ${shadowsocksport} > /dev/null 2>&1
@@ -385,7 +385,7 @@ firewall_set()
         else
             echo -e "[${yellow}Warning${plain}] iptables looks like shutdown or not installed, please manually set it if necessary."
         fi
-	elif check_sys packageManager dnf || check_sys packageManager yum && centosversion 7; then
+	elif check_sys packageManager yum && centosversion 7; then
 		systemctl status firewalld > /dev/null 2>&1
 		if [ $? -eq 0 ]; then
 			firewall-cmd --zone=public --add-port=${shadowsocksport}/tcp --permanent
@@ -936,15 +936,26 @@ check_pid(){
 install_filebrowser()
 {
 	cd ${cur_dir}
-	[ -d filebrowser ] && echo -e "[${green}Hint${plain}] filebrowser目录已存在" && cd filebrowser && ./filebrowser --port 23333 --scope /root && firewall-cmd --zone=public --add-port=23333/tcp --permanent && firewall-cmd --zone=public --add-port=23333/udp --permanent && firewall-cmd --reload && return                 
+	if check_sys packageManager dnf || check_sys packageManager yum && centosversion 6; then
+		[ -d filebrowser ] && echo -e "[${green}Hint${plain}] filebrowser目录已存在" && cd filebrowser && ./filebrowser --port 23333 --scope /root && iptables -I INPUT -m state --state NEW -m tcp -p tcp --dport 23333 -j ACCEPT && iptables -I INPUT -m state --state NEW -m udp -p udp --dport 23333 -j ACCEPT && service iptables save && service iptables restart && return                 
+	elif check_sys packageManager yum && centosversion 7; then
+		[ -d filebrowser ] && echo -e "[${green}Hint${plain}] filebrowser目录已存在" && cd filebrowser && ./filebrowser --port 23333 --scope /root && firewall-cmd --zone=public --add-port=23333/tcp --permanent && firewall-cmd --zone=public --add-port=23333/udp --permanent && firewall-cmd --reload && return                 
+	fi
 	[ ! -d filebrowser ] && mkdir filebrowser
 	cd filebrowser
 	wget https://github.com/filebrowser/filebrowser/releases/download/v1.8.0/linux-amd64-filebrowser.tar.gz
 	tar -zxvf linux-amd64-filebrowser.tar.gz
 	./filebrowser --port 23333 --scope /root &
-	firewall-cmd --zone=public --add-port=23333/tcp --permanent
-	firewall-cmd --zone=public --add-port=23333/udp --permanent
-	firewall-cmd --reload
+	if check_sys packageManager dnf || check_sys packageManager yum && centosversion 6; then
+		iptables -I INPUT -m state --state NEW -m tcp -p tcp --dport 23333 -j ACCEPT
+		iptables -I INPUT -m state --state NEW -m udp -p udp --dport 23333 -j ACCEPT
+		service iptables save
+		service iptables restart
+	elif check_sys packageManager yum && centosversion 7; then
+		firewall-cmd --zone=public --add-port=23333/tcp --permanent
+		firewall-cmd --zone=public --add-port=23333/udp --permanent
+		firewall-cmd --reload
+	fi
 	
 	clean_filebrowser
 }
