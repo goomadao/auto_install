@@ -998,6 +998,15 @@ install_rclone()
 	rm -rf rclone-v1.42-linux-amd64.rpm
 }
 
+#----------------------------------------------------------------------------------------------------------------------------------------------------11. install 宝塔面板--------------------------------------------------------------------------------------------------------------------
+install_bt()
+{
+	wget https://raw.githubusercontent.com/goomadao/auto_install/master/bt.sh
+	chmox +x bt.sh
+	./bt.sh
+}
+
+
 
 
 
@@ -1006,6 +1015,29 @@ install_rclone()
 usage()
 {
 	echo "Parameter list: -ssr(start stop status restart) | -pip | -speedtest | -progress | -aria2(start) | -cloudt(start) | -filebrowser | -rclone | -bbr"
+}
+
+open_firewall()
+{
+
+	echo "ssr firewall set"
+	firewall_set
+
+	echo "cloud torrent firewall set"
+	echo -e "${Info} 开始设置 iptables防火墙..."
+	Set_iptables
+	echo -e "${Info} 开始添加 iptables防火墙规则..."
+	Add_iptables
+	echo -e "${Info} 开始保存 iptables防火墙规则..."
+	Save_iptables
+
+
+	echo "file browser firewall set"
+	iptables -I INPUT -m state --state NEW -m tcp -p tcp --dport 23333 -j ACCEPT
+	iptables -I INPUT -m state --state NEW -m udp -p udp --dport 23333 -j ACCEPT
+	iptables -I OUTPUT -m state --state NEW -m tcp -p tcp --dport 23333 -j ACCEPT
+	iptables -I OUTPUT -m state --state NEW -m udp -p udp --dport 23333 -j ACCEPT
+
 }
 
 
@@ -1070,8 +1102,14 @@ case $1 in
 	-rclone )
 		install_rclone
 	;;
+
+	-firewall )
+		open_firewall
+	;;
 	
 	-all )
+		install_bt
+		
 		install_ssr
 		install_pip
 		upgrade_pip
