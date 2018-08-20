@@ -1106,14 +1106,23 @@ http
 
 server {
     listen 80;
+	listen [::]:80;
     server_name cloudt.madao.bid;
     location / {
-        proxy_pass http://localhost:8000;
+        proxy_pass http://127.0.0.1:8000;
+    }
+
+	location /sync {
+        proxy_pass http://127.0.0.1:8000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
     }
 }
 
 server {
     listen 80;
+	listen [::]:80;
     server_name file.madao.bid;
     location / {
         proxy_pass http://localhost:23333;
@@ -1122,6 +1131,7 @@ server {
 
 server {
     listen 80;
+	listen [::]:80;
     server_name luci.madao.bid;
     location / {
         proxy_pass http://localhost:8080;
