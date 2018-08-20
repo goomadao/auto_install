@@ -1006,15 +1006,46 @@ install_bt()
 	./bt.sh
 }
 
+#----------------------------------------------------------------------------------------------------------------------------------------------------12. 下载nextcloud网页--------------------------------------------------------------------------------------------------------------------
+
+download_nextcloud()
+{
+	cd /home/wwwroot
+	wget https://download.nextcloud.com/server/releases/nextcloud-13.0.5.zip
+	unzip nextcloud-13.0.5.zip
+	mv nextcloud-13.0.5 nextcloud
+	rm -rf nextcloud-13.0.5.zip
+}
+
+#----------------------------------------------------------------------------------------------------------------------------------------------------13. 下载AriaNG网页--------------------------------------------------------------------------------------------------------------------
+
+download_ariang()
+{
+	cd /home/wwwroot
+	wget https://github.com/mayswind/AriaNg/releases/download/0.4.0/aria-ng-0.4.0.zip
+	unzip aria-ng-0.4.0.zip
+	mv aria-ng-0.4.0 ariang
+	rm -rf aria-ng-0.4.0.zip
+}
 
 
+install_lnmp()
+{
+	cd /root
+	wget http://soft.vpser.net/lnmp/lnmp1.5.tar.gz
+	tar xzvf lnmp1.5.tar.gz
+	mv lnmp1.5 lnmp
+	rm -rf lnmp1.5.tar.gz
+	cd lnmp
+	./install.sh lnmp
+}
 
 
 
 
 usage()
 {
-	echo "Parameter list: -ssr(start stop status restart) | -pip | -speedtest | -progress | -aria2(start) | -cloudt(start) | -filebrowser | -rclone | -bbr"
+	echo "Parameter list: -all (lnmp) | -ssr(start stop status restart) | -pip | -speedtest | -progress | -aria2(start) | -cloudt(start) | -filebrowser | -rclone | -bbr | -bt | -firewall | -lnmp | -nextcloud | -ariang"
 }
 
 open_firewall()
@@ -1103,13 +1134,39 @@ case $1 in
 		install_rclone
 	;;
 
+	-bt )
+		install_bt
+	;;
+
 	-firewall )
 		open_firewall
 	;;
+
+	-nextcloud )
+		download_nextcloud
+	;;
+
+	-ariang )
+		download_ariang
+	;;
+
+	-lnmp )
+		install_lnmp
+	;;
 	
 	-all )
-		install_bt
+
+
+
+		if [ "$#" -eq 2 ];then
+			install_lnmp
+		fi
+
+
+
+		#install_bt
 		
+
 		install_ssr
 		install_pip
 		upgrade_pip
@@ -1120,6 +1177,9 @@ case $1 in
 		install_filebrowser
 		install_rclone
 		
+
+		download_nextcloud
+		download_ariang
 		
 		
 		
