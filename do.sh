@@ -1171,6 +1171,26 @@ EOF
 
 
 
+#----------------------------------------------------------------------------------------------------------------------------------------------------15. 安装frp反向代理--------------------------------------------------------------------------------------------------------------------
+install_frp()
+{
+	cd /root
+	wget https://github.com/fatedier/frp/releases/download/v0.21.0/frp_0.21.0_linux_amd64.tar.gz
+	tar xzvf frp_0.21.0_linux_amd64.tar.gz
+	rm -rf frp_0.21.0_linux_amd64.tar.gz
+	mv frp_0.21.0_linux_amd64 frp
+	cd frp
+	cat > frps.ini <<EOF
+[common]
+bind_port = 7000
+subdomain_host = frp.madao.bid
+private_token = a95655890
+EOF
+	./frps -c frps.ini&
+}
+
+
+
 
 
 
@@ -1288,6 +1308,10 @@ case $1 in
 	-lnmp )
 		install_lnmp
 	;;
+
+	-frp )
+		install_frp
+	;;
 	
 	-all )
 
@@ -1312,6 +1336,7 @@ case $1 in
 		Install_ct
 		install_filebrowser
 		install_rclone
+		install_frp
 		
 
 		download_nextcloud
