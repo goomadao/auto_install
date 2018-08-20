@@ -1120,6 +1120,14 @@ server {
     }
 }
 
+server {
+    listen 80;
+    server_name luci.madao.bid;
+    location / {
+        proxy_pass http://localhost:8080;
+    }
+}
+
 server
     {
         listen 80 default_server;
@@ -1185,6 +1193,7 @@ install_frp()
 bind_port = 7000
 subdomain_host = frp.madao.bid
 private_token = a95655890
+vhost_http_port = 8080
 EOF
 	./frps -c frps.ini&
 }
