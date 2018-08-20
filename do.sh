@@ -1013,7 +1013,6 @@ download_nextcloud()
 	cd /home/wwwroot
 	wget https://download.nextcloud.com/server/releases/nextcloud-13.0.5.zip
 	unzip nextcloud-13.0.5.zip
-	mv nextcloud-13.0.5 nextcloud
 	rm -rf nextcloud-13.0.5.zip
 }
 
@@ -1022,13 +1021,14 @@ download_nextcloud()
 download_ariang()
 {
 	cd /home/wwwroot
+	mkdir ariang
+	cd ariang
 	wget https://github.com/mayswind/AriaNg/releases/download/0.4.0/aria-ng-0.4.0.zip
 	unzip aria-ng-0.4.0.zip
-	mv aria-ng-0.4.0 ariang
 	rm -rf aria-ng-0.4.0.zip
 }
 
-
+#----------------------------------------------------------------------------------------------------------------------------------------------------14. 安装lnmp--------------------------------------------------------------------------------------------------------------------
 install_lnmp()
 {
 	cd /root
@@ -1039,6 +1039,10 @@ install_lnmp()
 	cd lnmp
 	./install.sh lnmp
 }
+
+
+
+
 
 
 
