@@ -1202,8 +1202,7 @@ install_frp()
 [common]
 bind_port = 7000
 subdomain_host = frp.madao.bid
-private_token = a95655890
-vhost_http_port = 8080
+token = a95655890
 EOF
 	./frps -c frps.ini&
 }
