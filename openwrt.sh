@@ -2,8 +2,8 @@
 
 #修改ssr luci配置
 cd /usr/lib/lua/luci/model/cbi/shadowsocksr
-sed 's/local arp_table = luci.sys.net.arptable() or {}/local arp_table = luci.ip.neighbors()/g' client.lua
-sed 's/local arp_table = luci.sys.net.arptable() or {}/local arp_table = luci.ip.neighbors()/g' client-config.lua
+sed -i 's/local arp_table = luci\.sys\.net\.arptable() or {}/local arp_table = luci\.ip\.neighbors()/g' client.lua
+sed -i 's/local arp_table = luci\.sys\.net\.arptable() or {}/local arp_table = luci\.ip\.neighbors()/g' client-config.lua
 
 
 
