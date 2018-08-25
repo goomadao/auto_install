@@ -78,7 +78,14 @@ EOF
 #为openwrt添加任务计划
 #包括：
 #1.每分钟检查有没有以配置文件frpc.ini和frpc1运行frpc 若没有就运行
-#2.早上八点重启路由器
+#2.早上八点重启路由器(需要先把时区改为正八区)
+
+cd /etc/config
+sed -i "s/option timezone 'UTC'/option timezone 'CST-8'/g" system
+/etc/init.d/system restart
+
+
+
 cd /etc/crontabs
 cat > root <<EOF
 */1 * * * * [ $(ps | grep frpc.ini | grep -v grep | wc -l) -eq 0 ] && cd /usr/frp && ./frpc -c frpc.ini
