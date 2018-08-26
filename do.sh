@@ -1134,7 +1134,7 @@ server {
 	listen [::]:80;
     server_name luci.madao.bid;
     location / {
-        proxy_pass http://localhost:8080;
+        proxy_pass http://localhost:1180;
     }
 }
 
@@ -1327,6 +1327,10 @@ case $1 in
 		install_lnmp
 	;;
 
+	-forwardport )
+		site_nginx
+	;;
+
 	-frp )
 		install_frp
 	;;
@@ -1337,7 +1341,6 @@ case $1 in
 
 		if [ "$#" -eq 2 ];then
 			install_lnmp
-			site_nginx
 		fi
 
 
