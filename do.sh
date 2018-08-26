@@ -1043,7 +1043,8 @@ install_lnmp()
 
 site_nginx()
 {
-	cat > /usr/local/nginx/conf/nginx.conf <<EOF
+	cd /usr/local/nginx/conf
+	cat > nginx.conf <<EOF
 user  www www;
 
 worker_processes auto;
@@ -1183,6 +1184,7 @@ server
 include vhost/*.conf;
 }
 EOF
+lnmp nginx restart
 
 
 }
