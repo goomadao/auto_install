@@ -44,7 +44,7 @@ remote_port = 11024
 type = tcp
 local_ip = 127.0.0.1
 local_port = 80
-remote_port = 8080
+remote_port = 1180
 EOF
 
 cat > frpc1 <<EOF
@@ -69,7 +69,7 @@ remote_port = 11024
 type = tcp
 local_ip = 127.0.0.1
 local_port = 80
-remote_port = 8080
+remote_port = 1180
 EOF
 
 
