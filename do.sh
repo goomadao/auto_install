@@ -1302,6 +1302,43 @@ add_memory()
 	swapon swapfile
 }
 
+#----------------------------------------------------------------------------------------------------------------------------------------------------18. 配置oneindex--------------------------------------------------------------------------------------------------------------------
+download_oneindex()
+{
+	cd /home/wwwroot
+	wget https://github.com/donwa/oneindex/releases/download/3.0/oneindex.zip
+	unzip oneindex.zip
+	rm -rf oneindex.zip
+	mv oneindex-master oneindex
+}
+
+rewrite_oneindex()
+{
+	cat > /usr/local/nginx/conf/rewrite/rewrite_oneindex.conf <<EOF
+autoindex off;
+
+location / {
+	try_files \$uri \$uri/ /index.php?/\$uri;
+}
+
+if (!-f \$request_filename){
+set \$rule_0 1\$rule_0;
+}
+if (!-d \$request_filename){
+set \$rule_0 2\$rule_0;
+}
+if (\$rule_0 = "21"){
+rewrite ^/(.*)\$ /index.php?/\$1 last;
+}
+EOF
+	cat > /var/spool/cron/root <<EOF
+*/6 * * * * /usr/bin/php /home/wwwroot/oneindex/one.php token:refresh
+*/1 * * * * /usr/bin/php /home/wwwroot/oneindex/one.php cache:refresh
+
+
+EOF
+}
+
 
 
 
@@ -1411,6 +1448,8 @@ case $1 in
 	-setsite )
 		download_nextcloud
 		download_ariang
+		download_oneindex
+		rewrite_oneindex
 		site_nginx
 	;;
 
