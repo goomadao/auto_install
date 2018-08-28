@@ -1269,24 +1269,37 @@ install_mtproxy()
 	cd objs/bin
 	curl -s https://core.telegram.org/getProxySecret -o proxy-secret
 	curl -s https://core.telegram.org/getProxyConfig -o proxy-multi.conf
-	cat > /etc/systemd/system/MTProxy.service <<EOF
-[Unit]
-Description=MTProxy
-After=network.target
+	./mtproto-proxy -u nobody -p 1026 -H 1025 -S 95655890956558909565589095655890 --aes-pwd proxy-secret proxy-multi.conf -M 5&
 
-[Service]
-Type=simple
-WorkingDirectory=/root/MTProxy
-ExecStart=/root/MTProxy/mtproto-proxy -u nobody -p 1026 -H 1025 -S 95655890956558909565589095655890 --aes-pwd /root/MTProxy/proxy-secret /root/MTProxy/proxy-multi.conf -M 5
-Restart=on-failure
 
-[Install]
-WantedBy=multi-user.target
-EOF
-	systemctl daemon-reload
-	systemctl start MTProxy.service
-	systemctl enable MTProxy.service
+# 	cat > /etc/systemd/system/MTProxy.service <<EOF
+# [Unit]
+# Description=MTProxy
+# After=network.target
 
+# [Service]
+# Type=simple
+# WorkingDirectory=/root/MTProxy
+# ExecStart=/root/MTProxy/objs/bin/mtproto-proxy -u nobody -p 1026 -H 1025 -S 95655890956558909565589095655890 --aes-pwd /root/MTProxy/objs/bin/proxy-secret /root/MTProxy/objs/bin/proxy-multi.conf -M 5
+# Restart=on-failure
+
+# [Install]
+# WantedBy=multi-user.target
+# EOF
+# 	systemctl daemon-reload
+# 	systemctl start MTProxy.service
+# 	systemctl enable MTProxy.service
+
+}
+
+#----------------------------------------------------------------------------------------------------------------------------------------------------17. 配置虚拟内存--------------------------------------------------------------------------------------------------------------------
+add_memory()
+{
+	#2G
+	dd if=/dev/zero of=swapfile bs=1024000 count=2000
+	mkswap swapfile
+	chmod 600 swapfile
+	swapon swapfile
 }
 
 
@@ -1417,6 +1430,10 @@ case $1 in
 
 	-mtproxy )
 		install_mtproxy
+	;;
+
+	-memory )
+		add_memory
 	;;
 	
 	-all )
