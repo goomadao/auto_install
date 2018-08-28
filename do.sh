@@ -961,15 +961,27 @@ install_filebrowser()
 	wget https://github.com/filebrowser/filebrowser/releases/download/v1.8.0/linux-amd64-filebrowser.tar.gz
 	tar -zxvf linux-amd64-filebrowser.tar.gz
 	./filebrowser --port 23333 --scope /root &
+	
+	set_filebrowser_firewall
+	
+	clean_filebrowser
+}
+
+set_filebrowser_firewall()
+{
 	if check_sys packageManager dnf; then
 		iptables -I INPUT -m state --state NEW -m tcp -p tcp --dport 23333 -j ACCEPT
 		iptables -I INPUT -m state --state NEW -m udp -p udp --dport 23333 -j ACCEPT
+		iptables -I OUTPUT -m state --state NEW -m tcp -p tcp --dport 23333 -j ACCEPT
+		iptables -I OUTPUT -m state --state NEW -m udp -p udp --dport 23333 -j ACCEPT
 		service iptables save
 		service iptables restart
 	elif check_sys packageManager yum; then
 		if centosversion 6; then
 			iptables -I INPUT -m state --state NEW -m tcp -p tcp --dport 23333 -j ACCEPT
 			iptables -I INPUT -m state --state NEW -m udp -p udp --dport 23333 -j ACCEPT
+			iptables -I OUTPUT -m state --state NEW -m tcp -p tcp --dport 23333 -j ACCEPT
+		iptables -I OUTPUT -m state --state NEW -m udp -p udp --dport 23333 -j ACCEPT
 			service iptables save
 			service iptables restart
 		elif centosversion 7; then
@@ -978,8 +990,6 @@ install_filebrowser()
 			firewall-cmd --reload
 		fi
 	fi
-	
-	clean_filebrowser
 }
 
 clean_filebrowser()
@@ -1207,8 +1217,34 @@ subdomain_host = frp.madao.bid
 token = a95655890
 EOF
 	./frps -c frps.ini&
+
+	set_frp_firewall
 }
 
+set_frp_firewall()
+{
+	if check_sys packageManager dnf; then
+		iptables -I INPUT -m state --state NEW -m tcp -p tcp --dport 7000 -j ACCEPT
+		iptables -I INPUT -m state --state NEW -m udp -p udp --dport 7000 -j ACCEPT
+		iptables -I OUTPUT -m state --state NEW -m tcp -p tcp --dport 7000 -j ACCEPT
+		iptables -I OUTPUT -m state --state NEW -m udp -p udp --dport 7000 -j ACCEPT
+		service iptables save
+		service iptables restart
+	elif check_sys packageManager yum; then
+		if centosversion 6; then
+			iptables -I INPUT -m state --state NEW -m tcp -p tcp --dport 7000 -j ACCEPT
+			iptables -I INPUT -m state --state NEW -m udp -p udp --dport 7000 -j ACCEPT
+			iptables -I OUTPUT -m state --state NEW -m tcp -p tcp --dport 7000 -j ACCEPT
+			iptables -I OUTPUT -m state --state NEW -m udp -p udp --dport 7000 -j ACCEPT
+			service iptables save
+			service iptables restart
+		elif centosversion 7; then
+			firewall-cmd --zone=public --add-port=7000/tcp --permanent
+			firewall-cmd --zone=public --add-port=7000/udp --permanent
+			firewall-cmd --reload
+		fi
+	fi
+}
 
 
 
@@ -1237,10 +1273,11 @@ open_firewall()
 
 
 	echo "file browser firewall set"
-	iptables -I INPUT -m state --state NEW -m tcp -p tcp --dport 23333 -j ACCEPT
-	iptables -I INPUT -m state --state NEW -m udp -p udp --dport 23333 -j ACCEPT
-	iptables -I OUTPUT -m state --state NEW -m tcp -p tcp --dport 23333 -j ACCEPT
-	iptables -I OUTPUT -m state --state NEW -m udp -p udp --dport 23333 -j ACCEPT
+	set_filebrowser_firewall
+
+	echo "frp firewall set"
+	set_frp_firewall
+
 
 }
 
