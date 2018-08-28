@@ -1126,7 +1126,7 @@ server {
 	location /sync {
         proxy_pass http://127.0.0.1:8000;
         proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Upgrade \$http_upgrade;
         proxy_set_header Connection "upgrade";
     }
 }
@@ -1308,7 +1308,7 @@ add_memory()
 
 usage()
 {
-	echo "Parameter list: -all (lnmp) | -ssr(start stop status restart) | -pip | -speedtest | -progress | -aria2(start) | -cloudt(start) | -filebrowser | -rclone | -bbr | -bt | -firewall | -lnmp | -nextcloud | -ariang | -mtproxy"
+	echo "Parameter list: -all (lnmp) | -ssr(start stop status restart) | -pip | -speedtest | -progress | -aria2(start) | -cloudt(start) | -filebrowser | -rclone | -bbr | -bt | -firewall | -lnmp | -setsite | -mtproxy"
 }
 
 open_firewall()
@@ -1408,20 +1408,14 @@ case $1 in
 		open_firewall
 	;;
 
-	-nextcloud )
+	-setsite )
 		download_nextcloud
-	;;
-
-	-ariang )
 		download_ariang
+		site_nginx
 	;;
 
 	-lnmp )
 		install_lnmp
-	;;
-
-	-forwardport )
-		site_nginx
 	;;
 
 	-frp )
@@ -1438,15 +1432,6 @@ case $1 in
 	
 	-all )
 
-
-
-		if [ "$#" -eq 2 ];then
-			install_lnmp
-		fi
-
-
-
-		#install_bt
 		
 
 		install_ssr
