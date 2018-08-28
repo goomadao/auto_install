@@ -1246,7 +1246,48 @@ set_frp_firewall()
 	fi
 }
 
+#----------------------------------------------------------------------------------------------------------------------------------------------------16. 配置MTProto Proxy--------------------------------------------------------------------------------------------------------------------
+install_mtproxy()
+{
+	if check_sys packageManager yum; then
+		yum -y update
+		yum -y install openssl-devel zlib-devel
+		yum -y groupinstall "Development Tools"
+	elif check_sys packageManager dnf; then
+		dnf -y update
+		dnf -y install openssl-devel zlib-devel
+		dnf -y groupinstall "Development Tools"
+	elif check_sys packageManager apt; then
+		apt-get -y update
+		apt-get install git curl build-essential libssl-dev zlib1g-dev
+	fi
 
+	cd ${cur_dir}
+	git clone https://github.com/TelegramMessenger/MTProxy
+	cd MTProxy
+	make
+	cd objs/bin
+	curl -s https://core.telegram.org/getProxySecret -o proxy-secret
+	curl -s https://core.telegram.org/getProxyConfig -o proxy-multi.conf
+	cat > /etc/systemd/system/MTProxy.service <<EOF
+[Unit]
+Description=MTProxy
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/root/MTProxy
+ExecStart=/root/MTProxy/mtproto-proxy -u nobody -p 1026 -H 1025 -S 95655890956558909565589095655890 --aes-pwd /root/MTProxy/proxy-secret /root/MTProxy/proxy-multi.conf -M 5
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+EOF
+	systemctl daemon-reload
+	systemctl start MTProxy.service
+	systemctl enable MTProxy.service
+
+}
 
 
 
@@ -1254,7 +1295,7 @@ set_frp_firewall()
 
 usage()
 {
-	echo "Parameter list: -all (lnmp) | -ssr(start stop status restart) | -pip | -speedtest | -progress | -aria2(start) | -cloudt(start) | -filebrowser | -rclone | -bbr | -bt | -firewall | -lnmp | -nextcloud | -ariang"
+	echo "Parameter list: -all (lnmp) | -ssr(start stop status restart) | -pip | -speedtest | -progress | -aria2(start) | -cloudt(start) | -filebrowser | -rclone | -bbr | -bt | -firewall | -lnmp | -nextcloud | -ariang | -mtproxy"
 }
 
 open_firewall()
@@ -1373,6 +1414,10 @@ case $1 in
 	-frp )
 		install_frp
 	;;
+
+	-mtproxy )
+		install_mtproxy
+	;;
 	
 	-all )
 
@@ -1388,6 +1433,7 @@ case $1 in
 		
 
 		install_ssr
+		install_mtproxy
 		install_pip
 		upgrade_pip
 		install_speedtest
