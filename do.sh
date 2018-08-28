@@ -1331,6 +1331,10 @@ if (\$rule_0 = "21"){
 rewrite ^/(.*)\$ /index.php?/\$1 last;
 }
 EOF
+
+	chmod 777 /usr/local/nginx/conf/rewrite/rewrite_oneindex.conf
+
+
 	cat > /var/spool/cron/root <<EOF
 */6 * * * * /usr/bin/php /home/wwwroot/oneindex/one.php token:refresh
 */1 * * * * /usr/bin/php /home/wwwroot/oneindex/one.php cache:refresh
