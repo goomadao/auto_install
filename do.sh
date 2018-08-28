@@ -6,7 +6,7 @@ yellow='\033[0;33m'
 plain='\033[0m'
 
 os='ossystem'
-password='a95655890'
+password='123456m'
 port='1024'
 
 libsodium_file="libsodium-1.0.16"
@@ -1003,7 +1003,7 @@ install_rclone()
 install_bt()
 {
 	wget https://raw.githubusercontent.com/goomadao/auto_install/master/bt.sh
-	chmox +x bt.sh
+	chmod +x bt.sh
 	./bt.sh
 }
 
