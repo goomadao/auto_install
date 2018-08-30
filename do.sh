@@ -22,6 +22,9 @@ DIR=`pwd`
 
 cur_dir=`pwd`
 
+bbrmod_github="raw.githubusercontent.com/chiakge/Linux-NetSpeed/master"
+
+
 
 
 
@@ -599,6 +602,45 @@ install_bbr()
 	sysctl_config
 	reboot_os
 	
+}
+
+#魔改bbr
+startbbrmod(){
+	remove_all
+	if [[ "${os}" == "centos" ]]; then
+		yum install -y make gcc
+		mkdir bbrmod && cd bbrmod
+		wget -N --no-check-certificate http://${bbrmod_github}/bbr/tcp_tsunami.c
+		echo "obj-m:=tcp_tsunami.o" > Makefile
+		make -C /lib/modules/$(uname -r)/build M=`pwd` modules CC=/usr/bin/gcc
+		chmod +x ./tcp_tsunami.ko
+		cp -rf ./tcp_tsunami.ko /lib/modules/$(uname -r)/kernel/net/ipv4
+		insmod tcp_tsunami.ko
+		depmod -a
+	else
+		apt-get update
+		if [[ "${os}" == "ubuntu" ]]; then
+			apt-get -y install build-essential
+			apt-get -y install software-properties-common
+			add-apt-repository ppa:ubuntu-toolchain-r/test -y
+			apt-get update
+		fi
+		apt-get -y install make gcc-4.9
+		mkdir bbrmod && cd bbrmod
+		wget -N --no-check-certificate http://${bbrmod_github}/bbr/tcp_tsunami.c
+		echo "obj-m:=tcp_tsunami.o" > Makefile
+		make -C /lib/modules/$(uname -r)/build M=`pwd` modules CC=/usr/bin/gcc-4.9
+		install tcp_tsunami.ko /lib/modules/$(uname -r)/kernel
+		cp -rf ./tcp_tsunami.ko /lib/modules/$(uname -r)/kernel/net/ipv4
+		depmod -a
+	fi
+	
+
+	echo "net.core.default_qdisc=fq" >> /etc/sysctl.conf
+	echo "net.ipv4.tcp_congestion_control=tsunami" >> /etc/sysctl.conf
+	sysctl -p
+    cd .. && rm -rf bbrmod
+	echo -e "魔改版BBR启动成功！"
 }
 
 check_os() {
@@ -1397,6 +1439,9 @@ case $1 in
 	
 	-bbr )
 		install_bbr
+		if [ $# -eq 2 ];then
+			startbbrmod
+		fi
 	;;
 	
 	-pip )
