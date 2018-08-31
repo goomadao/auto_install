@@ -1160,7 +1160,7 @@ http
 server {
     listen 80;
 	listen [::]:80;
-    server_name cloudt.madao.bid;
+    server_name cloudt.madao.bid cloudt6.madao.bid;
     location / {
         proxy_pass http://127.0.0.1:8000;
     }
@@ -1176,7 +1176,7 @@ server {
 server {
     listen 80;
 	listen [::]:80;
-    server_name file.madao.bid;
+    server_name file.madao.bid file6.madao.bid;
     location / {
         proxy_pass http://localhost:23333;
     }
@@ -1185,7 +1185,7 @@ server {
 server {
     listen 80;
 	listen [::]:80;
-    server_name luci.madao.bid;
+    server_name luci.madao.bid luci6.madao.bid;
     location / {
         proxy_pass http://localhost:1180;
     }
