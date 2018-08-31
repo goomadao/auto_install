@@ -1385,13 +1385,108 @@ EOF
 EOF
 }
 
+#----------------------------------------------------------------------------------------------------------------------------------------------------19. 配置brook--------------------------------------------------------------------------------------------------------------------
+install_brook()
+{
+	brook_dependency
 
+	brook_download
+
+	brook_config
+
+	brook_firewall
+
+	brook_start
+}
+
+brook_dependency()
+{
+	if check_sys packageManager yum; then
+		yum -y update
+		yum -y install net-tools
+	elif check_sys packageManager dnf; then
+		dnf -y update
+		dnf -y install net-tools
+	elif check_sys packageManager apt; then
+		apt-get -y update
+		apt-get install net-tools
+	fi
+}
+
+brook_download()
+{
+	cd /root
+	mkdir brook
+	cd brook
+	wget https://github.com/txthinking/brook/releases/download/v20180909/brook
+	[[ ! -e "brook" ]] && echo "Brook下载失败" && exit 1
+	chmod +x brook
+}
+
+brook_config()
+{
+	cat > /etc/brook.json <<EOF
+servers
+2024 123456m
+EOF
+}
+
+brook_firewall()
+{
+	if check_sys packageManager dnf;then
+		iptables -L -n | grep -i 2024 > /dev/null 2>&1
+		if [ $? -ne 0 ]; then
+			iptables -I INPUT -m state --state NEW -m tcp -p tcp --dport 2024 -j ACCEPT
+			iptables -I INPUT -m state --state NEW -m udp -p udp --dport 2024 -j ACCEPT
+			iptables -I OUTPUT -m state --state NEW -m tcp -p tcp --dport 2024 -j ACCEPT
+			iptables -I OUTPUT -m state --state NEW -m udp -p udp --dport 2024 -j ACCEPT
+			service iptables save
+			service iptables restart
+		else
+			echo -e "[${green}Info${plain}] port 2024 has been set up."
+		fi
+	elif check_sys packageManager yum; then
+		if centosversion 6; then
+			/etc/init.d/iptables status > /dev/null 2>&1
+			if [ $? -eq 0 ]; then
+				iptables -L -n | grep -i 2024 > /dev/null 2>&1
+				if [ $? -ne 0 ]; then
+					iptables -I INPUT -m state --state NEW -m tcp -p tcp --dport 2024 -j ACCEPT
+					iptables -I INPUT -m state --state NEW -m udp -p udp --dport 2024 -j ACCEPT
+					iptables -I OUTPUT -m state --state NEW -m tcp -p tcp --dport 2024 -j ACCEPT
+					iptables -I OUTPUT -m state --state NEW -m udp -p udp --dport 2024 -j ACCEPT
+					/etc/init.d/iptables save
+					/etc/init.d/iptables restart
+				else
+					echo -e "[${green}Info${plain}] port 2024 has been set up."
+				fi
+			else
+				echo -e "[${yellow}Warning${plain}] iptables looks like shutdown or not installed, please manually set it if necessary."
+			fi
+		elif centosversion 7; then
+			systemctl status firewalld > /dev/null 2>&1
+			if [ $? -eq 0 ]; then
+				firewall-cmd --zone=public --add-port=2024/tcp --permanent
+				firewall-cmd --zone=public --add-port=2024/udp --permanent
+				firewall-cmd --reload
+			else
+				echo -e "[${yellow}Warning${plain}] iptables looks like shutdown or not installed, please manually set it if necessary."
+			fi
+		fi
+	fi
+}
+
+brook_start()
+{
+	cd /root/brook
+	./brook server -l :2024 -p a95655890&
+}
 
 
 
 usage()
 {
-	echo "Parameter list: -all (lnmp) | -ssr(start stop status restart) | -pip | -speedtest | -progress | -aria2(start) | -cloudt(start) | -filebrowser | -rclone | -bbr | -bt | -firewall | -lnmp | -setsite | -mtproxy"
+	echo "Parameter list: -all (lnmp) | -ssr(start stop status restart) | -pip | -speedtest | -progress | -aria2(start) | -cloudt(start) | -filebrowser | -rclone | -bbr | -bt | -firewall | -lnmp | -setsite | -mtproxy | -brook"
 }
 
 open_firewall()
@@ -1517,6 +1612,10 @@ case $1 in
 	-memory )
 		add_memory
 	;;
+
+	-brook )
+		install_brook
+	;;
 	
 	-all )
 
@@ -1524,6 +1623,7 @@ case $1 in
 
 		install_ssr
 		install_mtproxy
+		install_brook
 		install_pip
 		upgrade_pip
 		install_speedtest
