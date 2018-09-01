@@ -1613,7 +1613,7 @@ case $1 in
 		if [ "$#" -eq 1 ]; then
 			install_mtproxy
 		elif ["$#" -eq 2 ]; then
-			$2_mtproxy
+			${2}_mtproxy
 		fi
 	;;
 
@@ -1625,7 +1625,8 @@ case $1 in
 		if [ "$#" -eq 1 ]; then
 			install_aria2
 		elif ["$#" -eq 2 ]; then
-			brook_$2
+			brook_${2}
+		fi
 	;;
 	
 	-all )
