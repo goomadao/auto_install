@@ -1614,6 +1614,7 @@ case $1 in
 			install_mtproxy
 		elif ["$#" -eq 2 ]; then
 			${2}_mtproxy
+		fi
 	;;
 
 	-memory )
