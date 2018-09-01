@@ -1311,8 +1311,7 @@ install_mtproxy()
 	cd objs/bin
 	curl -s https://core.telegram.org/getProxySecret -o proxy-secret
 	curl -s https://core.telegram.org/getProxyConfig -o proxy-multi.conf
-	./mtproto-proxy -u nobody -p 1026 -H 1025 -S 95655890956558909565589095655890 --aes-pwd proxy-secret proxy-multi.conf -M 5&
-
+	start_mtproxy
 
 # 	cat > /etc/systemd/system/MTProxy.service <<EOF
 # [Unit]
@@ -1332,6 +1331,11 @@ install_mtproxy()
 # 	systemctl start MTProxy.service
 # 	systemctl enable MTProxy.service
 
+}
+
+start_mtproxy()
+{
+	./mtproto-proxy -u nobody -p 1026 -H 1025 -S 95655890956558909565589095655890 --aes-pwd proxy-secret proxy-multi.conf -M 5&
 }
 
 #----------------------------------------------------------------------------------------------------------------------------------------------------17. 配置虚拟内存--------------------------------------------------------------------------------------------------------------------
@@ -1486,7 +1490,7 @@ brook_start()
 
 usage()
 {
-	echo "Parameter list: -all (lnmp) | -ssr(start stop status restart) | -pip | -speedtest | -progress | -aria2(start) | -cloudt(start) | -filebrowser | -rclone | -bbr | -bt | -firewall | -lnmp | -setsite | -mtproxy | -brook"
+	echo "Parameter list: -all (lnmp) | -ssr(start stop status restart) | -pip | -speedtest | -progress | -aria2(start) | -cloudt(start) | -filebrowser | -rclone | -bbr | -bt | -firewall | -lnmp | -setsite | -mtproxy(start) | -brook"
 }
 
 open_firewall()
