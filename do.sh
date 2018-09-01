@@ -1610,7 +1610,10 @@ case $1 in
 	;;
 
 	-mtproxy )
-		install_mtproxy
+		if [ "$#" -eq 1 ]; then
+			install_mtproxy
+		elif ["$#" -eq 2 ]; then
+			${2}_mtproxy
 	;;
 
 	-memory )
@@ -1618,7 +1621,10 @@ case $1 in
 	;;
 
 	-brook )
-		install_brook
+		if [ "$#" -eq 1 ]; then
+			install_aria2
+		elif ["$#" -eq 2 ]; then
+			brook_${2}
 	;;
 	
 	-all )
