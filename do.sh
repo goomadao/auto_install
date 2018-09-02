@@ -1335,6 +1335,7 @@ install_mtproxy()
 
 start_mtproxy()
 {
+	cd /root/MTProxy/objs/bin
 	./mtproto-proxy -u nobody -p 1026 -H 1025 -S 95655890956558909565589095655890 --aes-pwd proxy-secret proxy-multi.conf -M 5&
 }
 
