@@ -1560,7 +1560,7 @@ case $1 in
 	-aria2 )
 		if [ "$#" -eq 1 ]; then
 			install_aria2
-		elif ["$#" -eq 2 ]; then
+		elif [ "$#" -eq 2 ]; then
 			${2}_aria2
 		fi
 	;;
@@ -1613,7 +1613,7 @@ case $1 in
 	-mtproxy )
 		if [ "$#" -eq 1 ]; then
 			install_mtproxy
-		elif ["$#" -eq 2 ]; then
+		elif [ "$#" -eq 2 ]; then
 			${2}_mtproxy
 		fi
 	;;
@@ -1625,7 +1625,7 @@ case $1 in
 	-brook )
 		if [ "$#" -eq 1 ]; then
 			install_aria2
-		elif ["$#" -eq 2 ]; then
+		elif [ "$#" -eq 2 ]; then
 			brook_${2}
 		fi
 	;;
