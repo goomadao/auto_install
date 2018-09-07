@@ -1488,6 +1488,62 @@ brook_start()
 }
 
 
+#----------------------------------------------------------------------------------------------------------------------------------------------------20. 配置efb--------------------------------------------------------------------------------------------------------------------
+install_efb()
+{
+	install_docker
+
+	config_efb
+
+	start_efb
+
+	login_efb
+}
+
+install_docker()
+{
+	dnf install -y dnf-plugins-core
+	dnf config-manager --add-repo https://download.docker.com/linux/fedora/docker-ce.repo
+	dnf config-manager --set-enabled docker-ce-edge
+	dnf config-manager --set-enabled docker-ce-testing
+	dnf makecache fast
+	dnf -y install docker-ce
+	systemctl start docker
+	systemctl enable docker
+}
+
+config_efb()
+{
+	cd /root
+	mkdir efb
+	cd efb
+	touch tgdata.db
+	cat > config.py <<EOF
+master_channel = 'plugins.eh_telegram_master', 'TelegramChannel'
+slave_channels = [('plugins.eh_wechat_slave', 'WeChatChannel')]
+eh_telegram_master = {
+    "token": "623106941:AAEkvDiRN7TnpoukkM2q3U91iCWFmFgl_Ik",
+    "admins": [678384498],
+    "bing_speech_api": ["xxx", "xxx"],
+    "baidu_speech_api": {
+        "app_id": 0,
+        "api_key": "xxx",
+        "secret_key": "xxx"
+    }
+}
+EOF
+}
+
+start_efb()
+{
+	docker run -d --restart=always --name=ehforwarderbot -v /root/efb/config.py:/opt/ehForwarderBot/config.py -v /root/efb/tgdata.db:/opt/ehForwarderBot/plugins/eh_telegram_master/tgdata.db royx/docker-efb
+}
+
+login_efb()
+{
+	docker logs ehforwarderbot
+}
+
 
 usage()
 {
@@ -1629,6 +1685,10 @@ case $1 in
 			brook_${2}
 		fi
 	;;
+
+	-efb )
+		install_efb
+	;;
 	
 	-all )
 
@@ -1654,6 +1714,8 @@ case $1 in
 		
 		
 		install_bbr
+
+		install_efb
 	;;
 	
 	-* )
