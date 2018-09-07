@@ -1495,9 +1495,7 @@ install_efb()
 
 	config_efb
 
-	start_efb
-
-	login_efb
+	#start_efb
 }
 
 install_docker()
@@ -1522,7 +1520,7 @@ config_efb()
 master_channel = 'plugins.eh_telegram_master', 'TelegramChannel'
 slave_channels = [('plugins.eh_wechat_slave', 'WeChatChannel')]
 eh_telegram_master = {
-    "token": "623106941:AAEkvDiRN7TnpoukkM2q3U91iCWFmFgl_Ik",
+    "token": "",
     "admins": [678384498],
     "bing_speech_api": ["xxx", "xxx"],
     "baidu_speech_api": {
@@ -1537,17 +1535,15 @@ EOF
 start_efb()
 {
 	docker run -d --restart=always --name=ehforwarderbot -v /root/efb/config.py:/opt/ehForwarderBot/config.py -v /root/efb/tgdata.db:/opt/ehForwarderBot/plugins/eh_telegram_master/tgdata.db royx/docker-efb
-}
 
-login_efb()
-{
 	docker logs ehforwarderbot
 }
 
 
+
 usage()
 {
-	echo "Parameter list: -all (lnmp) | -ssr(start stop status restart) | -pip | -speedtest | -progress | -aria2(start) | -cloudt(start) | -filebrowser | -rclone | -bbr | -bt | -firewall | -lnmp | -setsite | -mtproxy(start) | -brook"
+	echo "Parameter list: -all (lnmp) | -ssr(start stop status restart) | -pip | -speedtest | -progress | -aria2(start) | -cloudt(start) | -filebrowser | -rclone | -bbr | -bt | -firewall | -lnmp | -setsite | -mtproxy(start) | -brook | -efb(start)"
 }
 
 open_firewall()
@@ -1687,7 +1683,11 @@ case $1 in
 	;;
 
 	-efb )
-		install_efb
+		if [ "$#" -eq 1 ]; then
+			install_efb
+		elif [ "$#" -eq 2 ]; then
+			${2}_efb
+		fi
 	;;
 	
 	-all )
