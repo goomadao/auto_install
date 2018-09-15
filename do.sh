@@ -479,7 +479,7 @@ get_ipv6()
 }
 
 # Uninstall ShadowsocksR
-uninstall_shadowsocksr(){
+ssr_uninstall(){
     printf "Are you sure uninstall ShadowsocksR? (y/n)"
     printf "\n"
     read -p "(Default: n):" answer
@@ -1543,7 +1543,7 @@ start_efb()
 
 usage()
 {
-	echo "Parameter list: -all (lnmp) | -ssr(start stop status restart) | -pip | -speedtest | -progress | -aria2(start) | -cloudt(start) | -filebrowser | -rclone | -bbr | -bt | -firewall | -lnmp | -setsite | -mtproxy(start) | -brook | -efb(start)"
+	echo "Parameter list: -all (lnmp) | -ssr(start stop status restart uninstall) | -pip | -speedtest | -progress | -aria2(start) | -cloudt(start) | -filebrowser | -rclone | -bbr | -bt | -firewall | -lnmp | -setsite | -mtproxy(start) | -brook | -efb(start)"
 }
 
 open_firewall()
@@ -1676,7 +1676,7 @@ case $1 in
 
 	-brook )
 		if [ "$#" -eq 1 ]; then
-			install_aria2
+			install_brook
 		elif [ "$#" -eq 2 ]; then
 			brook_${2}
 		fi
