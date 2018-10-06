@@ -103,7 +103,7 @@ EOF
 
 
 #配置filebrowser
-cd /etc/usr
+cd /usr/bin
 mkdir filebrowser
 cd filebrowser
 wget --no-check-certificate https://raw.githubusercontent.com/goomadao/auto_install/master/filebrowser
