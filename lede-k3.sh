@@ -9,7 +9,7 @@
 #install frp
 if [ -d  '/mnt/sda1/k3软件/frp' ]; then
     cd /mnt/sda1/k3软件
-    mv frp /usr/bin
+    cp -r frp /usr/bin/
 else
     cd /tmp
     wget https://github.com/fatedier/frp/releases/download/v0.21.0/frp_0.21.0_linux_arm.tar.gz
@@ -110,7 +110,7 @@ EOF
 #配置filebrowser
 if [ -d '/mnt/sda1/k3软件/filebrowser' ]; then
     cd /mnt/sda1/k3软件
-    mv filebrowser /usr/bin
+    cp -r filebrowser /usr/bin
     cd /usr/bin/filebrowser
 else
     cd /usr/bin
