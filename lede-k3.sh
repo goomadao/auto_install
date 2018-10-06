@@ -119,7 +119,7 @@ else
     wget --no-check-certificate https://raw.githubusercontent.com/goomadao/auto_install/master/filebrowser
 fi
 chmod +x filebrowser
-./filebrowser -p 23333 --scope /mnt/sda1
+nohup ./filebrowser -p 23333 --scope /mnt/sda1 2>&1 &
 
 
 
