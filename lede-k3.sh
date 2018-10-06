@@ -7,13 +7,18 @@
 
 
 #install frp
-cd /tmp
-wget https://github.com/fatedier/frp/releases/download/v0.21.0/frp_0.21.0_linux_arm.tar.gz
-tar xzvf frp_0.21.0_linux_arm.tar.gz
-mv frp_0.21.0_linux_arm frp
-mv frp /usr/bin
-cd /usr/bin
-cd frp
+if [ -d  '/mnt/sda1/k3软件/frp' ]; then
+    cd /mnt/sda1/k3软件
+    mv frp /usr/bin
+else
+    cd /tmp
+    wget https://github.com/fatedier/frp/releases/download/v0.21.0/frp_0.21.0_linux_arm.tar.gz
+    tar xzvf frp_0.21.0_linux_arm.tar.gz
+    mv frp_0.21.0_linux_arm frp
+    mv frp /usr/bin
+fi
+cd /usr/bin/frp
+
 
 chmod +x frpc frps
 
@@ -103,10 +108,16 @@ EOF
 
 
 #配置filebrowser
-cd /usr/bin
-mkdir filebrowser
-cd filebrowser
-wget --no-check-certificate https://raw.githubusercontent.com/goomadao/auto_install/master/filebrowser
+if [ -d '/mnt/sda1/k3软件/filebrowser' ]; then
+    cd /mnt/sda1/k3软件
+    mv filebrowser /usr/bin
+    cd /usr/bin/filebrowser
+else
+    cd /usr/bin
+    mkdir filebrowser
+    cd filebrowser
+    wget --no-check-certificate https://raw.githubusercontent.com/goomadao/auto_install/master/filebrowser
+fi
 chmod +x filebrowser
 ./filebrowser -p 23333 --scope /mnt/sda1
 
