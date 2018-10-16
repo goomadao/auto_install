@@ -94,9 +94,9 @@ EOF
 
 cd /etc/crontabs
 cat > root <<EOF
-*/1 * * * * [ $(ps | grep frpc.ini | grep -v grep | wc -l) -eq 0 ] && cd /usr/bin/frp && ./frpc -c frpc.ini
-*/1 * * * * [ $(ps | grep frpc1 | grep -v grep | wc -l) -eq 0 ] && cd /usr/bin/frp && ./frpc -c frpc1
-*/1 * * * * [ $(ps | grep frps.ini | grep -v grep | wc -l) -eq 0 ] && cd /usr/bin/frp && ./frps -c frps.ini
+*/1 * * * * [ \$(ps | grep frpc.ini | grep -v grep | wc -l) -eq 0 ] && cd /usr/bin/frp && ./frpc -c frpc.ini
+*/1 * * * * [ \$(ps | grep frpc1 | grep -v grep | wc -l) -eq 0 ] && cd /usr/bin/frp && ./frpc -c frpc1
+*/1 * * * * [ \$(ps | grep frps.ini | grep -v grep | wc -l) -eq 0 ] && cd /usr/bin/frp && ./frps -c frps.ini
 
 
 
