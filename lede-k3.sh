@@ -22,6 +22,7 @@ cd /usr/bin/frp
 
 chmod +x frpc frps
 
+#连接外网的frp
 cat > frpc.ini <<EOF
 [common]
 server_addr = www6.madao.bid
@@ -59,6 +60,8 @@ local_port = 5900
 remote_port = 3359
 EOF
 
+
+#内网的端口转发
 cat > frpc1 <<EOF
 [common]
 server_addr = 0.0.0.0
@@ -147,6 +150,16 @@ EOF
 
 sed -i 's/unixcharset = |CHARSET|/unixcharset = utf8' /etc/samba/samba.conf.template
 sed -i 's/invalid users = root/#invalid users = root' /etc/samba/samba.conf.template
+
+cat >> /etc/samba/samba.conf.template <<EOF
+
+
+[openwrt]
+path = /mnt/sda1/
+valid users = root
+guest ok = no
+
+EOF
 
 
 touch /etc/samba/smbpasswd  
