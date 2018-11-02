@@ -148,8 +148,8 @@ config sambashare
     optiondir_mask '0755'  
 EOF
 
-sed -i 's/unixcharset = |CHARSET|/unixcharset = utf8' /etc/samba/samba.conf.template
-sed -i 's/invalid users = root/#invalid users = root' /etc/samba/samba.conf.template
+sed -i 's/unix charset = |CHARSET|/unixcharset = utf8/g' /etc/samba/smb.conf.template
+sed -i 's/invalid users = root/#invalid users = root/g' /etc/samba/smb.conf.template
 
 cat >> /etc/samba/samba.conf.template <<EOF
 
