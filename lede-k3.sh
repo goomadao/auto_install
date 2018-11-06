@@ -131,37 +131,37 @@ nohup ./filebrowser -p 23333 --scope /mnt/sda1 2>&1 &
 
 #配置samba36-server
 
-cat > /etc/config/samba <<EOF
-config samba  
-    option workgroup 'WORKGROUP'  
-    option homes '1'  
-    option name 'k3'  
-    option description 'k3'  
+# cat > /etc/config/samba <<EOF
+# config samba  
+#     option workgroup 'WORKGROUP'  
+#     option homes '1'  
+#     option name 'k3'  
+#     option description 'k3'  
 
-config sambashare  
-    option name 'k3'
-    option path '/mnt/sda1'
-    option users 'root'  
-    option read_only 'no'  
-    option guest_ok 'no'  
-    option create_mask '0755'  
-    option dir_mask '0755'  
-EOF
+# config sambashare  
+#     option name 'k3'
+#     option path '/mnt/sda1'
+#     option users 'root'  
+#     option read_only 'no'  
+#     option guest_ok 'no'  
+#     option create_mask '0755'  
+#     option dir_mask '0755'  
+# EOF
 
-sed -i 's/unix charset = |CHARSET|/unixcharset = utf-8/g' /etc/samba/smb.conf.template
-sed -i 's/invalid users = root/#invalid users = root/g' /etc/samba/smb.conf.template
+# sed -i 's/unix charset = |CHARSET|/unixcharset = utf-8/g' /etc/samba/smb.conf.template
+# sed -i 's/invalid users = root/#invalid users = root/g' /etc/samba/smb.conf.template
 
-cat >> /etc/samba/samba.conf.template <<EOF
-
-
-[openwrt]
-path = /mnt/sda1/
-valid users = root
-guest ok = no
-
-EOF
+# cat >> /etc/samba/samba.conf.template <<EOF
 
 
-touch /etc/samba/smbpasswd  
-echo "请输入两次samba共享的密码，用户名为root"
-smbpasswd  -a root  
+# [openwrt]
+# path = /mnt/sda1/
+# valid users = root
+# guest ok = no
+
+# EOF
+
+
+# touch /etc/samba/smbpasswd  
+# echo "请输入两次samba共享的密码，用户名为root"
+# smbpasswd  -a root  
