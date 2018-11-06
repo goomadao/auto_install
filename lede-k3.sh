@@ -58,6 +58,18 @@ type = tcp
 local_ip = 192.168.1.194
 local_port = 5900
 remote_port = 3359
+
+[k3szfedoraxrdp]
+type = tcp
+local_ip = 192.168.1.195
+local_port = 3389
+remote_port = 5589
+
+[k3szyuancheng]
+type = tcp
+local_ip = 192.168.1.194
+local_port = 3389
+remote_port = 6689
 EOF
 
 
@@ -78,6 +90,18 @@ type = tcp
 local_ip = 127.0.0.1
 local_port = 9091
 remote_port = 9092
+
+[s3localszfedoraxrdp]
+type = tcp
+local_ip = 192.168.1.195
+local_port = 3389
+remote_port = 5589
+
+[s3localyuancheng]
+type = tcp
+local_ip = 192.168.1.194
+local_port = 3389
+remote_port = 6689
 EOF
 
 cat > frps.ini <<EOF
